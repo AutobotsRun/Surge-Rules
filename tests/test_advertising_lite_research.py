@@ -54,12 +54,12 @@ class Tests(unittest.TestCase):
 
     def test_native_ip_audit_counts_risky_scope_without_listing_ips(self):
         native = (
-            b"IP-CIDR,203.0.113.0/24,no-resolve\\n"
-            b"IP-CIDR,8.8.8.8/32,no-resolve\\n"
-            b"IP-CIDR,1.2.0.0/16\\n"
-            b"IP-CIDR6,2001:4860:4860::8888/128,no-resolve\\n"
-            b"IP-CIDR,invalid\\n"
-            b"IP-CIDR6,8.8.8.8/32\\n"
+            b"IP-CIDR,203.0.113.0/24,no-resolve\n"
+            b"IP-CIDR,8.8.8.8/32,no-resolve\n"
+            b"IP-CIDR,1.2.0.0/16\n"
+            b"IP-CIDR6,2001:4860:4860::8888/128,no-resolve\n"
+            b"IP-CIDR,invalid\n"
+            b"IP-CIDR6,8.8.8.8/32\n"
         )
         result = liteaudit.audit_native_ip_rules(native)
         self.assertEqual(result["ipv4"], 3)
@@ -71,7 +71,7 @@ class Tests(unittest.TestCase):
 
     def test_hosts_remain_exact_when_compared_to_existing_rules(self):
         exact, unsupported = liteaudit.candidate_rules(
-            b"0.0.0.0 ads.example.net\\n", "hosts")
+            b"0.0.0.0 ads.example.net\n", "hosts")
         self.assertFalse(unsupported)
         self.assertTrue(liteaudit.covered(exact, set(), "ads.example.net"))
         self.assertFalse(liteaudit.covered(exact, set(), "child.ads.example.net"))
