@@ -31,3 +31,16 @@ GitHub 仓库文件接口对上游这个大型列表没有返回完整正文。�
 ## 回滚
 
 正式应用前，记录实验机原始广告规则订阅 URL、订阅顺序和固定提交 SHA。异常时恢复旧订阅，观察微信和广告拦截状态。仓库使用 Git revert 提交变更，不覆盖历史或强推主分支。
+
+
+## 2026-11-23 上传文件的实际审查记录
+
+用户提供的 `Advertising_All.txt` 是原始 Surge 规则纯文本，扩展名不影响解析。本地完整扫描结果：
+
+- 原始文件：9,604,598 字节，SHA-256 `01f8b9caf1ab7b9ba58b17ebfcd04dc61b27af0751c43b5daa23ee5e7f6676d9`。
+- 原始有效规则：291,174；DOMAIN 16,436；DOMAIN-SUFFIX 273,956；DOMAIN-KEYWORD 278；IP-CIDR 486；IP-CIDR6 3；URL-REGEX 14；AND 1。
+- 第 4518 行恰好出现一次 `DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net`。没有其它 `DOMAIN-SUFFIX` 或 `DOMAIN-KEYWORD` 覆盖该域名；已观察过的相关 PCDN IP 也没有命中现有 IP-CIDR 列表。
+- 15 条复杂规则均予以保留，按原始顺序计算的 SHA-256 指纹为 `fe1ae9ca8060a098b242f2b4270c80ecdfb8d16d9d14711119184e5f88d4f23a`。更新时必须保持此集合不变，否则暂停并要求人工审查。
+- 本地生成的候选 `Advertising.list`：291,173 条有效规则，即**仅减少 1 条 DOMAIN**；SHA-256 `ed3efe720f6ffa23b44e8923b3fa02091028f00e6cfcb3b40b94ab00e1ab52f7`。
+- 现有 14 条 URL 正则中，有两条不限制域名、仅检查 URL 路径。它们并未随着域名排除而删除，因此不能保证任意路径均不会触发广告拦截；还必须在实验机用实际连接确认。单纯从规则集分析也无法保证未来新增 IP 规则不会影响该服务。
+- GitHub 当前尚未生成/发布 `rules/Advertising.list`，以上 SHA 只对应本地审查的候选文件，不代表已在设备启用。构建程序的更新仍须通过 GitHub Actions 验证。
