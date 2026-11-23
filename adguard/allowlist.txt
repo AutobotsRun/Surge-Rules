@@ -11,3 +11,7 @@
 
 # SmartPay mini program (login / account pages; repeated timeouts fixed by exception)
 @@||smartpay-admin.fugetech.com^
+
+# REVIEW ONLY (Safari mainland China/HK): historically identified Tencent Safe Browsing endpoint.
+# Adding to live AdGuard Home would change DNS policy network-wide; DO NOT merge without review.
+@@||safebrowsing.urlsec.qq.com^
