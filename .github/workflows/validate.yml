@@ -6,6 +6,10 @@ on:
       - "custom/**"
       - "upstream/**"
       - "upstreams/**"
+      - "sources/**"
+      - "rules/**"
+      - "config/managed-services.json"
+      - "tests/**"
       - "scripts/**"
       - ".github/workflows/**"
   push:
