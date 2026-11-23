@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "source": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Advertising/Advertising_All.list",
+  "source_repo": "https://github.com/blackmatrix7/ios_rule_script",
+  "source_license": "GPL-2.0",
+  "exclusions": [
+    {
+      "type": "DOMAIN",
+      "value": "apd-pcdnwxlogin.teg.tencent-cloud.net",
+      "reason": "WeChat PCDN login request was rejected by Advertising_All and recovered after an exact temporary DIRECT override; narrow exception pending sustained validation.",
+      "evidence": "Surge iPhone 15 Pro 2026-11-23 13:55:28 Beijing, request #24035",
+      "approved_for_test": true
+    }
+  ]
+}
