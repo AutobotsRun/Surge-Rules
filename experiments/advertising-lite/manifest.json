@@ -1,0 +1,22 @@
+{
+  "artifact_purpose": "TEST ONLY, generated on GitHub Actions; not published as subscription",
+  "candidate_rules": 2890,
+  "candidate_sha256": "92cdd3dd0eed603d9eb153fed92b06ef8dd9d21ef949df883ac29c098ffdf632",
+  "conversion": "Peter Lowe HOSTS -> Surge DOMAIN, never DOMAIN-SUFFIX",
+  "known_good_conflicts": 0,
+  "license_file_name": "LICENSE.GPL-3.0.txt",
+  "list_sha256": "240347ee54b5baee112535ea647a8cce4878bba5b971924072066bdedf8ed0a7",
+  "native_functionality_rules_omitted": 8,
+  "native_ip_rules_omitted": 13,
+  "native_rules_included": 650,
+  "peter_exact_domains_added": 2240,
+  "peter_exact_domains_unique": 2254,
+  "rule_file_name": "Advertising-Lite-TEST.list",
+  "rule_syntax": "Surge external RULE-SET (not DOMAIN-SET)",
+  "sensitive_functionality_conflicts": 0,
+  "source_sha256": {
+    "awavenue_surge_only_ads": "45cb8e7fc318765c85353c5ddfcabd216978288ba271de7f32e085a876319832",
+    "peter_lowe_ads_only": "f1e3eaf111ed2840a4630b9a94f98169988eea5fde282fee62b610410879d1e5"
+  },
+  "status": "read-only memory-only preview; NO subscription/export/deployment"
+}

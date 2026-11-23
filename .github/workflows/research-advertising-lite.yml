@@ -1,0 +1,48 @@
+name: Compare Advertising Lite candidates (read-only)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/research_advertising_lite.py"
+      - "scripts/preview_advertising_lite.py"
+      - "scripts/export_advertising_lite_test_artifact.py"
+      - "tests/test_advertising_lite_research.py"
+      - "tests/test_advertising_lite_preview.py"
+      - "tests/test_advertising_lite_export.py"
+      - ".github/workflows/research-advertising-lite.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Test conservative source parsing offline
+        run: python3 -m unittest discover -s tests -p 'test_advertising_lite*.py' -v
+      - name: Compare public sources without any deployment
+        run: python3 scripts/research_advertising_lite.py
+      - name: Memory-only preview against pinned sources (counts and hash only)
+        run: python3 scripts/preview_advertising_lite.py
+      - name: Build TEST-ONLY Surge ruleset with attribution (draft PR only)
+        if: github.event_name == 'pull_request' && github.event.pull_request.draft == true
+        run: python3 scripts/export_advertising_lite_test_artifact.py
+      - name: Upload draft PR test archive (not a published subscription)
+        if: github.event_name == 'pull_request' && github.event.pull_request.draft == true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: advertising-lite-surge-test-only
+          path: /tmp/advertising-lite-surge-test-only/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload statistics only (not original blocklists)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: advertising-lite-source-comparison
+          path: /tmp/advertising-lite-comparison.json
+          retention-days: 14
