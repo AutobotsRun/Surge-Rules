@@ -131,3 +131,24 @@ Notes:
 **First candidate to prototype after separate authorization:** AWAvenue Pure Ads (native Surge 671 rules) as the small China-app advertisement core; examine a second independent, proven international ad/tracker baseline separately. Retain Privacy and Hijacking subscriptions at first to isolate the variable. Any AWAvenue-only trial must inspect 13 IP-CIDR entries and reject policy behavior on shared hosts, and verify known good connections and actual ad misses.
 
 The goal is measured breakage vs ad-block tradeoffs and explainable per-category sources, **not** a target line count. Candidates cannot be merged or distributed as licensed third-party copied rules until their attribution/GPL conditions are met. Do not publish private Surge request logs. The initial draft PR should remain research-only.
+
+
+## Fourth research round: compact international ad-only complement and IP-rule risk (2026-11-23)
+
+Read-only nine-source audit: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45185218741 (comparison steps green). The study adds two *reference-only* candidates; **no subscription is published, no PR merged, and no device is changed**.
+
+| Additional source | Unique exact HOSTS names | Matched by current Advertising | Outside current Advertising | Outside all Advertising / Privacy / Hijacking | Matches any four known-good domains |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Peter Lowe source via StevenBlack's yoyo.org hosts mirror | 3,563 | 3,343 | 220 | 195 | No (exact-host check) |
+| Peter Lowe official ads-only `notrackers=1` | 2,254 | 2,124 | 130 | 125 | No (exact-host check) |
+
+- Original Peter Lowe source and inclusion policy: https://pgl.yoyo.org/as/ and https://pgl.yoyo.org/as/policy.php. Its `notrackers=1` mode excludes **entries tagged as trackers**, according to the maintainer's classification. It does *not* guarantee a pure DNS advertising list free of all privacy or malware-related entries.
+- Official ads-only feed observed by CI: `https://pgl.yoyo.org/as/serverlist.php?hostformat=hosts&notrackers=1&showintro=0&mimetype=plaintext`; 58,521 bytes; SHA-256 `f1e3eaf111ed2840a4630b9a94f98169988eea5fde282fee62b610410879d1e5`.
+- Full yoyo.org HOSTS mirror observed by CI: 88,220 bytes; SHA-256 `b3e7e62bca2058d8c6c20a41473f02cb5d76f5bc8854a04189071a042d42e56d`.
+- The ads-only candidate is better aligned with a distinct Privacy RULE-SET already enabled. HOSTS are **exact** entries for this analysis; turning every HOSTS entry into `DOMAIN-SUFFIX` would significantly expand its effect and is not approved.
+- The author-defined Peter Lowe categories are not a replacement for real-device functional tests or an exception list. The list's redistribution/license terms require clarification, even where a third-party mirror's code is permissively licensed.
+- AWAvenue's 13 `IP-CIDR` rules were separately checked using Python's IP network parser: 13 IPv4, zero IPv6, zero reserved/private networks, zero prefixes broader than /24, zero invalid entries. This is **not** evidence that shared public IPs are safe to block. Prefer a domain-only initial prototype until each IP rule is independently justified.
+- Keep all four already verified good hostnames as explicit fail-closed safety tests. Neither Peter Lowe candidate matches them under exact HOSTS semantics in this snapshot; AWAvenue's basic domain/keyword predicates also do not match them.
+- Two-source experiment to evaluate, still **not authorized to publish**: AWAvenue `Only.Ads` native RULE-SET plus Peter Lowe official `notrackers=1` in exact-domain form, deduplicated by explicit DOMAIN and DOMAIN-SUFFIX coverage only. Report total sizes and static overlaps, then complete provenance/license and iPhone 15 Pro A/B checks before considering a replacement.
+
+**Research interpretation:** Most of Peter Lowe's ads-only domains are already matched by the large current Advertising list. The reason to consider it is a small, curated international baseline with an explicit inclusion policy, **not** greater static blocking coverage. The combined pair's on-device effectiveness and latency have not been measured.
