@@ -85,8 +85,8 @@ def parse_peter_hosts(data):
     return domains
 
 
-def build_preview(native_data, peter_data):
-    """Return only counts and digest; do not return or publish third-party rules."""
+def _assemble_candidate(native_data, peter_data):
+    """Construct approved rule lines in memory; caller decides export policy."""
     native, omitted_ip, omitted_review = parse_native(native_data)
     peter_hosts = parse_peter_hosts(peter_data)
     exact = {v for kind, v in native if kind == "DOMAIN"}
@@ -113,7 +113,7 @@ def build_preview(native_data, peter_data):
         raise ValueError("empty derived preview")
     # This digest is for comparison across runs, not a downloadable list.
     digest = hashlib.sha256(("\n".join(lines) + "\n").encode("utf-8")).hexdigest()
-    return {
+    return lines, {
         "status": "read-only memory-only preview; NO subscription/export/deployment",
         "native_rules_included": len(native),
         "native_ip_rules_omitted": omitted_ip,
@@ -126,6 +126,13 @@ def build_preview(native_data, peter_data):
         "sensitive_functionality_conflicts": 0,
         "conversion": "Peter Lowe HOSTS -> Surge DOMAIN, never DOMAIN-SUFFIX",
     }
+
+
+def build_preview(native_data, peter_data):
+    """Return counts and digest only, preserving research-only API behavior."""
+    _, metadata = _assemble_candidate(native_data, peter_data)
+    return metadata
+
 
 
 def main():
