@@ -293,3 +293,39 @@ This is a **production full Advertising baseline**, **NOT a Lite test**. Only an
 - No file was committed under rules/ or default branch. The Actions artifact is **not a public raw URL**, a live subscription, or proof of Surge/iOS compatibility. A/B remains unperformed pending controlled local import on the spare device.
 
 Previous notes saying there is "no list exported" describe the earlier **memory-only preview** stage; the later **test-only Actions artifact** now contains a generated .list, but remains outside the repo's live rule catalog.
+
+
+## Ninth round: spare-iPhone conditional deployment and direct rule matching (2026-11-23)
+
+User explicitly requested changing Surge. Surge iOS script environment independently confirmed DEVICE_MODEL=iPhone16,1, matching the user's spare iPhone 15 Pro; Surge version 6.0.1. The existing Surge.conf was in iCloud Drive Shadow; edits may be uploaded to iCloud immediately, so a naive unconditional full-list replacement was not performed.
+
+### Pinned experimental resource
+
+The checked and GPL-attributed draft-only export bundle (2,890 entries) was published once to the research branch under experiments/advertising-lite with LICENSE.GPL-3.0.txt, THIRD_PARTY_NOTICES.md and manifest.json. Pinned immutable test URL:
+
+    https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/41cc017763ae9ef2127eac28be1effd11ef1080e/experiments/advertising-lite/Advertising-Lite-TEST.list
+
+It returned HTTP 200 to Surge before loading. The original verified file SHA-256: 240347ee54b5baee112535ea647a8cce4878bba5b971924072066bdedf8ed0a7. The one-time GitHub Actions publication block was then removed and its permission reverted to contents: read.
+
+### Conditional rules in the iCloud-shared Rule section
+
+Official device-specific syntax: https://manual.nssurge.com/profile/requirement.html
+
+- Only DEVICE_MODEL=='iPhone16,1' gets four persistent known-good exact Direct exceptions and the new Lite RULE-SET.
+- Every other model is intended to retain the original full Advertising RULE-SET via an end-of-line requirement DEVICE_MODEL!='iPhone16,1'. The original rule line remains in the shared profile; its end-of-line requirement format is backward-compatible with older Surge builds that treat the requirement as an ordinary comment.
+- Privacy, Hijacking and all unrelated profile sections are retained unchanged. This is a change to a potentially iCloud-synced profile document, but the conditional rule semantics are intended to preserve primary-device behavior.
+- The user's iPhone Air was **not** directly connected to or tested, so its actual effective state has not been independently verified.
+
+### Observed on spare device
+
+- The initial external resource showed not-ready / file-not-found, so a resource refresh was invoked before interpreting any match results. Refresh succeeded and now the external Lite resource is ready=true. The full Advertising external resource is absent on the spare.
+- Direct matched Lite RULE-SET with the precise source subrules for ad.qq.com and pagead2.googlesyndication.com; both REJECT.
+- Each of the four known-good service hostnames now matched the persistent exact Direct rule.
+- Removed two duplicated runtime temporary Direct rules for payment and WeChat DNS; both remain Direct afterward, confirming permanent exceptions are active. No temporary rules remain.
+- Some other domain checks were rejected by DNS sinkhole 0.0.0.0 and built-in LAN/China effects; those observations are **not** proof of Lite coverage and must not be treated as such.
+
+### Still pending
+
+The actual WeChat mini-program/payment-page and other apps have NOT been retested with Lite, nor has performance been benchmarked. No default branch merge. The research PR stays draft, and the test list does not replace the normal rules/ catalog. The primary iPhone Air may see the shared profile text via iCloud; no rule editing should be done in Surge's UI while the test depends on requirement annotations, because some UI paths can remove such expressions.
+
+Rollback: In the shared Rule section, remove the five experiment-only DEVICE_MODEL=='iPhone16,1' rules (four Direct and one Lite RULE-SET) plus experiment comment; strip the end-of-line DEVICE_MODEL!='iPhone16,1' requirement from the original full Advertising rule, leaving it unqualified. No other changes required.
