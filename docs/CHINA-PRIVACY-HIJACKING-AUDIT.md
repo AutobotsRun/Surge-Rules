@@ -318,3 +318,27 @@ The Surge buffer is bounded (50 recent requests plus active connections). Case-i
 The independent pinned-source research script adds a security_endpoint_review classification with three hostnames and tests; this is NOT a production allowance or a service-reachability test.
 
 **Conclusion:** Privacy may overblock an official Google security API, but there is still no evidence of lost Chrome or Safari protection. The OHTTP API hostname is not blocked by these three public rule sets and is eligible for the existing Google policy. No device configuration has been changed.
+
+
+## Fifth round: single-domain Hijacking curation candidate (2026-11-23)
+
+Adobe's current official network endpoint documentation explicitly lists **geo2.adobe.com**:
+https://helpx.adobe.com/business/enterprise/manage-services/configure-services/network-endpoints.html
+
+This establishes that the host can be legitimate Adobe app infrastructure, NOT a universally malicious hijack domain. We therefore prepared a **review-only test variant** of the pinned 228-rule Hijacking list with exactly one active predicate removed:
+
+    DOMAIN,geo2.adobe.com
+
+The candidate has **227 active rules** and preserves all 185 other suffix rules and all 42 CIDR rules, including 114.119.160.0/21. Its source comments, order and other rule bytes remain unchanged; it adds GPL-2.0 provenance and includes the existing bundled full GPL-2.0 license and a modification notice. This is only a proposed future filtering-policy correction, NOT an upstream repo update or an active Surge configuration.
+
+- Generator: scripts/build_hijacking_curated_test.py, pinned public Git blob 0ffb798f0ce5f098fd3e7dc889fbbca94b9bdd5d.
+- Offline regression tests: tests/test_hijacking_curated_test.py, 7/7 passed after correcting a test case that had accidentally searched comment text rather than active rule lines.
+- [Independent builder and candidate diff CI — success](https://github.com/AutobotsRun/Surge-Rules/actions/runs/45207602555).
+- [Repository validation — success](https://github.com/AutobotsRun/Surge-Rules/actions/runs/45207597695).
+- Seven-day test archive: hijacking-curated-test-only-not-deployed (contains candidate list, manifest, GPL license and notices). No production upload, no live subscription, no DNS changes.
+
+**Two-layer blocking matters:** Adobe geo2.adobe.com is also DNS-sinkholed by the user's local AdGuard Home (0.0.0.0). Merely removing it from Hijacking will **not** make it reachable at home. Any future functional fix requires a separate, evidence-supported DNS allowlist decision and A/B testing, not a blind worldwide domain exception.
+
+**Next review topics, not deleted:** Tencent safety API hostname (blocked in Privacy and AdGuard DNS), wide historical 114.119.160.0/21 cloud prefix, and China_All keyword microsoft. No application-level failure has yet justified their removal.
+
+This document and PR are review-only; nothing was deployed to the spare iPhone 15 Pro or the main iPhone Air.
