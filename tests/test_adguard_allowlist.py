@@ -11,7 +11,7 @@ REQUIRED = {
     "dns.weixin.qq.com.cn",
     "smartpay-admin.fugetech.com",
 }
-PATTERN = re.compile(r"@@\\|\\|([a-z0-9-]+(?:\\.[a-z0-9-]+)+)\\^")
+PATTERN = re.compile(r"@@\|\|([a-z0-9-]+(?:\.[a-z0-9-]+)+)\^")
 
 
 class AdGuardAllowlistTests(unittest.TestCase):
