@@ -1,0 +1,66 @@
+# Safe Browsing privacy-filter exception — controlled spare-device fix
+
+**Date:** 2026-11-23. **Status:** A targeted live change was explicitly authorized by the user. This documentation-only PR does not deploy the change or merge any lists. Keep it Draft.
+
+## Why
+
+The upstream `Privacy_All.list` from `blackmatrix7/ios_rule_script` contains the exact rule `DOMAIN,safebrowsing.googleapis.com`. It is currently loaded as `REJECT`, *before* the user's service-specific Google rules. Surge verified that it was actually selected on the spare iPhone 15 Pro.
+
+Google identifies this address as the legitimate Google Safe Browsing API service endpoint:
+https://developers.google.com/safe-browsing/reference/rest
+
+The user explicitly confirmed Chrome iOS's **Standard protection** is enabled and authorized removal of inappropriate copied third-party rules. Google says Standard protection includes privacy-preserving, privacy-server-mediated URL checks:
+https://support.google.com/chrome/answer/9890866?co=GENIE.Platform%3DiOS&hl=en
+
+A blocked API may interfere with third-party apps that call this service; it does **not**, by itself, establish that the user actually lost Chrome or Safari protection. No risky-site browsing tests were attempted.
+
+## Exactly what changed on the spare iPhone
+
+Connected Surge iOS controller independently identifies the spare iPhone 15 Pro as `DEVICE_MODEL=iPhone16,1`. Its shared profile is under an iCloud Drive synced directory, so edits can synchronize profile *text* to other devices. We therefore **only enabled this exception for iPhone16,1** using official Surge conditional syntax.
+
+Added in the profile's existing `[Rule]` section immediately before `# Privacy` and the upstream Privacy REJECT rule:
+
+```ini
+# Security service exception: preserve official Google Safe Browsing API on spare iPhone only.
+#!REQUIREMENT DEVICE_MODEL=='iPhone16,1' DOMAIN,safebrowsing.googleapis.com,"🇺🇸 US"
+```
+
+This is a higher-priority exact destination rule, not a removal from the original third-party subscription, which we do not control. The effective outcome is that the legitimate Google API is **no longer rejected on the spare**. It routes using the existing US policy, consistent with other Google services. `Privacy_All` is still active for every other entry. Other device models still use their previous policy for this API until separately reviewed.
+
+**Why not edit upstream:** A remote third-party RULE-SET cannot be safely modified line-by-line; removing this entry literally would require a separately hosted, license-compliant curated fork and carefully staged switch. The precise override is the lower-risk correction during the current Lite comparison.
+
+## Evidence after the change (read-only Surge checks)
+
+| Target | Actual effective policy | Result |
+|---|---|---|
+| safebrowsing.googleapis.com | `🇺🇸 US` | **Changed** from Privacy REJECT to an exact permitted route |
+| safebrowsingohttpgateway.googleapis.com | `🇺🇸 US` (existing Google list) | Unchanged |
+| safebrowsing.urlsec.qq.com | Privacy `REJECT` | Unchanged; independent AdGuard Home DNS sinkhole `0.0.0.0` remains |
+| ad.qq.com | Lite `REJECT` | Unchanged; 2,890-rule Lite continues working |
+| pagead2.googlesyndication.com | Lite `REJECT` | Unchanged |
+| smartpay-admin.fugetech.com | `🚀 Direct` | Unchanged |
+| dns.weixin.qq.com.cn | `🚀 Direct` | Unchanged |
+| geo2.adobe.com | Hijacking `REJECT` | Unchanged |
+| www.microsoft.com | China_All `🚀 Direct` | Unchanged |
+
+`Advertising-Lite-TEST.list`, Privacy_All and Hijacking external resource states remained **ready=true** after the profile reload. No new AdGuard Home rules or GitHub production `rules/` files were modified; the browser's Standard protection setting was not changed.
+
+## Potential further cleanup (not applied)
+
+- `safebrowsing.urlsec.qq.com`: name suggests a Tencent-related safety function and is blocked both in Privacy and by AdGuard Home DNS. Without authoritative service ownership/use evidence or verified client requests, **do not silently bypass both layers**.
+- `geo2.adobe.com`: Adobe officially lists it as a necessary network endpoint in its Adobe-app endpoint documentation:
+  https://helpx.adobe.com/business/enterprise/manage-services/configure-services/network-endpoints.html
+  It is in Hijacking and is DNS-sinkholed by AdGuard Home, so a Surge-only allow rule would not restore functionality. Investigate actual device/app need and network-wide consequences before touching DNS.
+- `114.119.160.0/21`: Hijacking blocks 2,048 addresses currently associated with Huawei cloud infrastructure. Blocking a shared cloud subnet may be overbroad, but do not unilaterally delete on ownership evidence alone; check actual failures first.
+- `DOMAIN-KEYWORD,microsoft`: currently directs even `www.microsoft.com` via China_All. Broad routing deserves targeted review, not automatic removal.
+
+## Exact rollback
+
+On the spare device's shared `[Rule]` text, remove only the new comment and conditional exact-host rule above. Surge reverts that destination to Privacy_All `REJECT`. Leave the original Advertising Lite/full conditional setup, four known-good WeChat Direct rules, and all other rules unchanged.
+
+**Important:** Surge warns that UI edits may lose `#!REQUIREMENT` expressions. Preserve the condition annotations if making any later UI edits to this iCloud-synchronized profile:
+https://manual.nssurge.com/profile/requirement.html
+
+Research-only context: https://github.com/AutobotsRun/Surge-Rules/pull/13
+
+This document records a user-approved, reversible change already applied through Surge MCP. The PR itself **does not deploy or apply** device edits.
