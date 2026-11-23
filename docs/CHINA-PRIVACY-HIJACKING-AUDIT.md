@@ -444,3 +444,13 @@ Microsoft docs distinguish [Worldwide Microsoft 365 endpoints](https://learn.mic
 BGP announcements identify the 114.119.160.0/21 Hijacking block as part of Huawei Cloud Singapore AS136907 (https://bgp.he.net/AS136907). Its current ASN ownership confirms it is real cloud infrastructure, not that all hosts are safe. Hijacking-Curated-TEST.list deliberately kept the full /21 for now; no real connection failures attributable to this exact subnet have been observed in the spare's bounded Surge request history. Future reduction should require IP-specific evidence and replacement of overly broad source rules only after testing.
 
 **Current live spare baseline:** 2,890-rule Advertising Lite, 39,935-rule Privacy Curated, 227-rule Hijacking Curated, original China_All 3,752. All three new lists were checked for ready status and actual representative match behavior. No further network/security-filter changes were made in this eighth audit.
+
+
+## User decision: leave Tencent safety filtering and Microsoft direct routing unchanged (2026-11-24)
+
+The user confirmed two relevant usage observations:
+
+- **Safari is rarely used.** Tencent Safe Browsing (safebrowsing.urlsec.qq.com) currently matches Privacy-Curated REJECT and is also DNS-blocked by AdGuard Home. The user does not presently need a Safari-specific adjustment. **Decision: keep both existing filters unchanged; revisit only if actual functionality or a change in browser usage warrants testing.** This is not a conclusion that the blocked host is malicious or that all browser anti-phishing checks are preserved.
+- **Microsoft services appear to work when routed Direct.** China_All DOMAIN-KEYWORD,microsoft is broad, but no real user-visible problem has been identified. **Decision: retain current direct routing instead of forcing Microsoft endpoints to proxy.** Revisit only if a particular Microsoft site, identity login, Graph API, Teams, or update flow has demonstrable trouble.
+
+Accordingly, deprioritize the speculative Tencent allowlist and Microsoft keyword rewrite. Do not alter the spare's independently hosted iCloud Surge profile, AdGuard Home DNS filters, or the primary iPhone. The current tested baseline remains Advertising Lite 2,890 / Privacy Curated 39,935 / Hijacking Curated 227 / China_All 3,752. Future work should prioritize real-world false positives and reproducible compatibility evidence rather than optimizing the smallest possible rule count.
