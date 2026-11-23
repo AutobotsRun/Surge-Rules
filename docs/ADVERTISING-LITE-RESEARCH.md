@@ -54,3 +54,46 @@ This is only a *static matcher observation*, not proof that a specific program w
 4. Before A/B switching iPhone 15 Pro, complete license review (HaGeZi and AdGuard use GPL-3.0, StevenBlack top-level license is MIT but aggregated inputs require attribution review) and test Surge parsing/indexing. Keep the existing full list unchanged and do not make changes to any other devices.
 
 **Status: research PR remains draft; no Advertising-Lite.list exists yet.**
+
+
+## Second research round: native Surge Lite and OISD Small (2026-11-23)
+
+Audit (read-only): https://github.com/AutobotsRun/Surge-Rules/actions/runs/45178290951
+Offline validation: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45178290956
+
+The comparison now includes five candidates, not three:
+
+| Candidate | Format | Simple predicates | Candidate hostnames covered by current Advertising | Current Advertising exact + suffix predicates conservatively covered by candidate | Known false positives |
+| --- | --- | ---: | ---: | ---: | --- |
+| Blackmatrix7 AdvertisingLite_All | Native Surge | 37,692 | 37,163 (98.6%) | 26,244 / 290,391 (9.0%) | WeChat PCDN login |
+| OISD Small | ABP DNS | 62,315 | 52,027 (83.5%) | 51,739 / 290,391 (17.8%) | Both WeChat PCDN names |
+| HaGeZi Light | ABP DNS | 76,708 | 24,921 (32.5%) | 22,714 / 290,391 (7.8%) | Both WeChat PCDN names |
+| StevenBlack base | Hosts exact | 76,107 | 29,823 (39.2%) | 1,321 / 290,391 (0.45%) | None of the four |
+| AdGuard DNS filter | ABP DNS | 190,058 | 169,659 (89.3%) | 168,587 / 290,391 (58.1%) | SmartPay admin |
+
+IMPORTANT: These are two different directions of comparison. A candidate's hostnames being matched by the old list does NOT mean the candidate retains the same percentage of the original list's blocking. Reverse predicate coverage is also not a real-world blocking-rate estimate. Tests do not account for actual request frequency, complex rules, IP matching, CNAME, exceptions, in-page ads, or region-specific breakage. The reverse test is conservative: a candidate exact-domain rule cannot cover all subdomains of an existing DOMAIN-SUFFIX rule.
+
+### Native Blackmatrix7 AdvertisingLite
+
+- Repository: https://github.com/blackmatrix7/ios_rule_script/tree/master/rule/Surge/AdvertisingLite
+- Analyzed AdvertisingLite_All.list: 953,816 bytes, SHA-256 0cca6a10810742bcf1e59ff64309801fe89c96fc5000570773c22c8300227974.
+- 38,069 valid native rules: DOMAIN 23,753; DOMAIN-SUFFIX 13,939; DOMAIN-KEYWORD 187; IP-CIDR 186; IP-CIDR6 1; URL-REGEX 2; AND 1.
+- AdvertisingLite.list alone is only the NON-domain-set portion. Surge 5.21+ should use AdvertisingLite_All.list alone, per its upstream README, not the split file alone.
+- Header last updated 2025-12-08 02:03:37, whereas current full Advertising header shows 2026-10-28 05:39:01. Lite is notably stale.
+- The upstream README states Lite excludes the Privacy and Hijacking rule categories, though independent overlap still exists.
+- Lite still matches the validated WeChat PCDN login hostname. Any derived candidate must use exact, reviewed exclusions.
+
+### OISD Small
+
+- Official list https://small.oisd.nl; official FAQ https://oisd.nl/faq.
+- Observed 1,411,894 bytes, 62,315 ABP-style rules, SHA-256 fefc022b58b960ec888a91817a76dd0c908a97972f61bba9cef94054822d5801.
+- The maintainer describes it as focused on ads and mobile ads, with typically daily updates, under GPL-3.0.
+- It is not native Surge syntax. It matches both validated WeChat PCDN hostnames and needs an independently verified conversion and exclusion plan.
+
+### Decisions and next gates
+
+1. Keep active full Advertising as the stable baseline. A prior No index problem with a different generated version does not alone prove current performance.
+2. Evaluate actual app blocking and breakage before assigning a winner. Never publish private request logs to this public repository.
+3. Create a deterministic fail-closed generator, license notices, exact exclusion tests and version-pinned candidate only after source selection.
+4. Do not mistakenly convert StevenBlack exact HOSTS entries to suffix blocking. That silently changes semantics.
+5. Current PR is research-only. No Advertising-Lite.list, no merge, no Surge or AdGuard Home changes.
