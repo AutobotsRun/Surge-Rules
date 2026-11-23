@@ -154,3 +154,54 @@ are **not statically matched** by any of the audited Lite, Privacy or Hijacking 
 **Current recommendation (no device change):** Keep Lite + Privacy + Hijacking separated for now. Mark Safe Browsing endpoints for manual functional verification before any change; prioritize the unusual 114.119.160.0/21 IP range and Adobe host for Hijacking evidence review. China keyword microsoft remains overbroad enough to warrant separate route-specific testing. Source-pinned snapshots are preferable to unknown moving master revisions once future changes are approved.
 
 At the time of writing this report, **zero** profile lines, active Surge modules, AdGuard Home allowlists, default branch rules, and subscribed services were changed by this research round. Both Lite and this independent research PR remain in their previously stated states.
+
+
+## Round two: complete 39,936-rule coverage audit (2026-11-23)
+
+GitHub's Git Blob API successfully delivered the full Privacy_All content even though its Contents interface had returned an empty payload. We parsed **all four pinned source snapshots** independently: Privacy_All 39,936 entries, Advertising Lite 2,890, Hijacking 228, and China_All 3,752. Public source rules were inspected in memory only and **were not copied into this repo**.
+
+### Exact snapshot counts and rule types
+
+| Snapshot | DOMAIN | DOMAIN-SUFFIX | DOMAIN-KEYWORD | IPv4 CIDR | IPv6 CIDR | USER-AGENT | Total |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Privacy_All | 19 | 39,897 | 9 | 11 | 0 | 0 | 39,936 |
+| Advertising Lite | 2,875 | 11 | 4 | 0 | 0 | 0 | 2,890 |
+| Hijacking | 1 | 185 | 0 | 42 | 0 | 0 | 228 |
+| China_All | 17 | 3,674 | 9 | 17 | 4 | 31 | 3,752 |
+
+Pinned Git blob identifiers (these are Git object hashes, not SHA-256):
+- Privacy: a75df944a7a0fcae26f762059c0f7fd72f42c420
+- Lite: ea6d2316d16180147930a363f928976a598d9431
+- Hijacking: 0ffb798f0ce5f098fd3e7dc889fbbca94b9bdd5d
+- China: bba28360d9dc0310b418df6d9fb7dfa76588c895
+
+### Directional *full-rule coverage* (not traffic overlap)
+
+The rule-coverage test counts A as covered by B only where **every destination matching a rule in A is also matched by B**. It handles domain exact matches, DNS suffix ancestors (with label boundaries), substring keyword implication and IPv4 CIDR subnet containment. It does not claim every partially intersecting rule is covered, and it does not know real blocked request frequency.
+
+| Source → target | Fully covered source rules | Detail |
+|---|---:|---|
+| Lite → Privacy | **86 / 2,890 (2.98%)** | 83 exact-domain hosts by Privacy suffix, 2 by Privacy keyword, 1 identical exact |
+| Privacy → Lite | **1 / 39,936 (0.0025%)** | Exact host js.users.51.la only |
+| Hijacking → Privacy | **0 / 228** | None of the native predicates fully covered |
+| Hijacking → Lite | **0 / 228** | None fully covered |
+| Hijacking IPv4 ranges overlapping any Privacy IPv4 range | **0 / 42** | Based on the pinned lists |
+| Hijacking suffix predicates fully covered by China_All | **64 / 185** | Mostly by broad .cn; NOT redundant, because policy REJECT conflicts with China Direct |
+
+Examples: adjust.com, ads.linkedin.com, analytics.tiktok.com, adstats.tencentmusic.com and c2.gdt.qq.com are exact Lite domains covered by Privacy suffixes. Privacy keyword 'analytics.' covers the exact Lite hosts analytics.adjust.cn and analytics.rayjump.com. These are static matches, not user-traffic measurements.
+
+The four explicitly allowed service hosts and all eight precautionary mini-program watchlist hosts did not match any domain/suffix/keyword predicate in Lite, Privacy or Hijacking. This static test cannot rule out AdGuard Home DNS sinkholing, changed upstreams, IP rules, or unknown functionality hosts. No live allowlist was changed.
+
+### Hijacking findings requiring a human policy decision
+
+- **Flash China:** The existing Hijacking rule directly blocks the entire flash.cn suffix. Adobe has publicly acknowledged an authorized China distribution relationship: https://community.adobe.com/announcements-637/update-on-flash-player-eol-719213 ; https://www.flash.cn/notice/notice?id=154 . A legitimate website can still be intentionally blocked for other reasons, but cannot be labeled malicious solely by list membership. **Do not unblock automatically.**
+- **IP age and width:** Of 42 Hijacking IPv4 predicates, 40 are /32, one is 222.186.61.96/31 and one is 114.119.160.0/21 (2,048 addresses). The latter especially needs *current* ownership, shared-service, and reputation review before being retained or removed in a future curated list. Current WHOIS, ASN ownership and incident data have NOT yet been verified.
+- Potential further functionality-policy review: geo2.adobe.com, mackeeper.com, newapi.com, anydeskchina.cn and betterzip.net. Flagged as ambiguous, not confirmed false positives.
+
+### Recommendation and reproducibility
+
+**Keep Privacy_All and Hijacking separately enabled during the current Advertising Lite device trial.** The large Privacy list supplies largely independent tracking controls and Hijacking has distinct predicates. Do not merge or delete them based on filename, rule count, or broad China overlaps.
+
+New code: scripts/audit_privacy_hijacking.py; synthetic offline tests: tests/test_privacy_hijacking_audit.py; read-only GitHub Actions workflow: .github/workflows/research-privacy-hijacking.yml. It fetches only the pinned public Git blob bytes, validates Git-object SHA and expected type counts, and outputs aggregate statistics without publishing raw rule lists or user/device data.
+
+**Important distinction:** the GitHub connector analysis independently established the above measurements; Actions workflow pass/fail must be validated from its actual run, not assumed merely because the workflow was added. PR remains DRAFT, no device changes, no main merge.
