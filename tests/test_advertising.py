@@ -43,7 +43,7 @@ class AdvertisingExclusionTests(unittest.TestCase):
 
     def test_regex_requires_review(self):
         data = (TARGET + "\nURL-REGEX,https://example.com/ads\n").encode()
-        with self.assertRaisesRegex(ValueError, "Potential remaining"):
+        with self.assertRaisesRegex(ValueError, "Complex rules differ"):
             mod.transform(data, EXCLUSIONS, strict=False)
 
     def test_reviewed_complex_rules_are_allowed_unchanged(self):
