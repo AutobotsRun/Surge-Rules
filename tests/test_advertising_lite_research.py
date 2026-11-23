@@ -37,5 +37,21 @@ class Tests(unittest.TestCase):
         self.assertEqual(sum(types.values()), 4)
 
 
+    def test_native_surge_uses_exact_suffix_and_keyword_semantics(self):
+        native = (
+            b"# UPDATED: 2025-12-08 02:03:37\n"
+            b"DOMAIN,exact.example.com\n"
+            b"DOMAIN-SUFFIX,blocked.example.com\n"
+            b"DOMAIN-KEYWORD,adtracking\n"
+            b"IP-CIDR,203.0.113.0/24,no-resolve\n"
+        )
+        exact, suffix, types = liteaudit.surge_rules(native)
+        self.assertEqual(exact, {"exact.example.com"})
+        self.assertEqual(suffix, {"blocked.example.com"})
+        self.assertTrue(liteaudit.covered(exact, suffix, "a.blocked.example.com"))
+        self.assertFalse(liteaudit.covered(exact, suffix, "a.exact.example.com"))
+        self.assertEqual(sum(types.values()), 4)
+
+
 if __name__ == "__main__":
     unittest.main()
