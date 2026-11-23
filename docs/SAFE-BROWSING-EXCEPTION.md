@@ -1,5 +1,7 @@
 # Safe Browsing privacy-filter exception — controlled spare-device fix
 
+> **Device-scope correction (2026-11-24):** The user confirmed that the spare iPhone 15 Pro uses a **separate iCloud account** from the primary iPhone Air. Therefore their Surge profiles do **not** cross-sync through iCloud. Earlier references in this report to a shared profile propagating to the primary iPhone were an incorrect precaution. Model-conditional DEVICE_MODEL rules on the spare are legacy safeguards and are not necessary to protect the primary device. This research modifies **only the connected spare**; the primary iPhone is not remotely accessible through this Surge controller.
+
 **Date:** 2026-11-23. **Status:** A targeted live change was explicitly authorized by the user. This documentation-only PR does not deploy the change or merge any lists. Keep it Draft.
 
 ## Why
