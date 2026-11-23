@@ -142,6 +142,50 @@ def compare(source, target):
     }
 
 
+
+def china_redundancy(book):
+    """Count China predicates wholly covered by OTHER predicates in same list.
+
+    Equivalent routing decision depends on keeping the covering rule and its
+    policy in the same RULE-SET. USER-AGENT and cross-type IP/domain matching
+    are deliberately excluded. Counts do not measure latency or traffic.
+    """
+    suffixes = book["DOMAIN-SUFFIX"]
+    keywords = book["DOMAIN-KEYWORD"]
+    by_kind = {}
+    samples = {}
+    for kind in ("DOMAIN", "DOMAIN-SUFFIX", "IP-CIDR", "IP-CIDR6"):
+        redundant = []
+        for val in sorted(book[kind]):
+            if kind in ("DOMAIN", "DOMAIN-SUFFIX"):
+                # DOMAIN may be covered by same-name suffix, but a suffix
+                # cannot be considered to cover itself.
+                candidates = list(parents(val))
+                if kind == "DOMAIN-SUFFIX":
+                    candidates = candidates[1:]
+                match = any(x in suffixes for x in candidates) or any(
+                    key in val for key in keywords)
+            else:
+                net = ipaddress.ip_network(val)
+                match = any(
+                    net.subnet_of(ipaddress.ip_network(other))
+                    for other in book[kind] if other != val)
+            if match:
+                redundant.append(val)
+        by_kind[kind] = len(redundant)
+        samples[kind] = redundant[:8]
+    return {
+        "total_fully_covered": sum(by_kind.values()),
+        "by_rule_type": by_kind,
+        "examples": samples,
+        "note": (
+            "Only individually provable predicate redundancy, holding source "
+            "and destination policy fixed. Does not justify removing broad "
+            "keyword rules, which may be policy overreach rather than redundancy."
+        ),
+    }
+
+
 def audit(rules):
     p, l, h, c = [rules[k] for k in ("privacy", "lite", "hijacking", "china")]
     def addresses(rulebook):
@@ -169,6 +213,7 @@ def audit(rules):
         ),
         "hijacking_ip_ranges_intersecting_privacy_ip_ranges": overlaps,
         "hijacking_wide_ip_ranges": wide,
+        "china_internal_redundancy": china_redundancy(c),
         "protected_host_hits": protected_hits,
         "security_endpoint_review": {
             host: {key: bool(host_match(host, rules[key]))
