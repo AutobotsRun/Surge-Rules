@@ -393,3 +393,33 @@ The existing scripts/audit_privacy_hijacking.py now also reports china_internal_
 **Priority:** Leave China_All active while awaiting the already identified Privacy main-app indexing test. Even after removing all 45 provably redundant entries, the size reduction is small and unproven to improve routing performance. The main value is independent review of overly broad keyword policy, not aggressive shaving of a relatively modest 3,752-rule set.
 
 **No device configuration changes were made in this China audit.**
+
+## Seventh round: verified 227-rule Hijacking spare-device cutover
+
+**Device identity correction:** User confirmed the spare iPhone 15 Pro is on its own iCloud account, separate from the primary iPhone Air. Thus there is no cross-account iCloud sharing of Surge profile changes. Previous precautions about automatic propagation to the main phone were overconservative. The connected Surge MCP only controls the spare.
+
+### Immutable staged source
+
+- Experimental branch: experiment/hijacking-curated-20261124
+- Pinned commit: 09a8434d829afdfce3583955d4173768a5b062ec
+- Path: experiments/hijacking-curated/Hijacking-Curated-TEST.list
+- Audited Git blob SHA: f1b234f38aaf6b4e0ff9eb97c941336444598da1
+- Change: remove exactly DOMAIN,geo2.adobe.com from blackmatrix7's 228-rule GPL-2.0 Hijacking snapshot, resulting in 227. All other entries and order preserved.
+- Attribution in test header and manifest; upstream GPL license in sources/blackmatrix7/LICENSE.
+
+### Carefully staged live swap (verified)
+
+1. Connected spare iPhone: staged the 227-rule curated candidate immediately before original Hijacking, with original kept unconditionally active as fallback.
+2. Initial resource missing-file indication cleared after controlled resource refresh. Resource became ready=true with **no index error**. Unlike the large Privacy list, this small Hijacking rule-set indexed without needing a new main-app action.
+3. Confirmed actual matches from the **candidate**, not old fallback: anydeskchina.cn REJECT; 114.119.164.8 REJECT via the unchanged /21; 222.186.61.96 REJECT via unchanged /31.
+4. Removed only the old original Hijacking rule line from the spare profile. Preserved Advertising Lite, Privacy Curated, Google US and four WeChat/SmartPay Direct exceptions.
+5. Final resource matrix: Hijacking-Curated-TEST.list, Privacy-Curated-TEST.list, Advertising-Lite-TEST.list and Google.list all **ready=true with no error**. Actual rule matches confirmed all retained protections above.
+
+**Adobe nuance:** The legitimate Adobe host geo2.adobe.com no longer matches Hijacking, but local AdGuard Home DNS at 10.0.0.6 still replies 0.0.0.0. As a result, Surge reported a LAN Direct rule match (IP-CIDR,0.0.0.0/8). **This is a sinkhole side-effect, not evidence that Adobe access has been restored or that the host should be put on a DNS allowlist.** No AdGuard Home filter was changed.
+
+**Rollback:** From the current spare's [Rule] section, replace only the curated Hijacking stanza with the previous exact original:
+    # Hijacking
+    RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Hijacking/Hijacking.list,REJECT
+Then confirm geo2.adobe.com matches original Hijacking REJECT and other test cases match original. Do not alter Lite or Privacy.
+
+**Status:** live rule-set cutover and representative rule matching verified; no claim of long-term Adobe or other app functional testing. PR #13 remains Draft, unrelated Google/DNS configuration unchanged.
