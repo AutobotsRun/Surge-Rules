@@ -27,11 +27,14 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Fetch and validate all sources
         run: python3 scripts/audit_upstreams.py --sync --report "$RUNNER_TEMP/surge-upstreams-report.md"
+      - name: Build reviewed service rule candidates only
+        run: python3 scripts/build_service_rules.py --write
       - name: Re-run tests and validate generated state before proposing changes
         run: |
           python3 -m py_compile scripts/audit_upstreams.py
           python3 -m unittest discover -s tests -p 'test_*.py' -v
           python3 scripts/audit_upstreams.py
+          python3 scripts/build_service_rules.py --check
       - name: Propose changes in a draft PR (no merge or release)
         shell: bash
         env:
@@ -43,6 +46,7 @@ jobs:
           if [ -d upstream/ ]; then
             git add -A -- upstream/
           fi
+          git add -A -- rules/Google.list rules/YouTube.list rules/Apple.list rules/OpenAI.list rules/Telegram.list rules/Netflix.list rules/Spotify.list
           if git diff --cached --quiet; then
             echo "All monitored rules unchanged."
             exit 0

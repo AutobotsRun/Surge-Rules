@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "license": "GPL-2.0",
+  "license_file": "sources/blackmatrix7/LICENSE",
+  "source_repo": "https://github.com/blackmatrix7/ios_rule_script",
+  "services": [
+    {
+      "id": "blackmatrix7-google",
+      "name": "Google",
+      "mirror_path": "upstream/blackmatrix7/Google.list",
+      "published_path": "rules/Google.list",
+      "baseline_rules": 703
+    },
+    {
+      "id": "blackmatrix7-youtube",
+      "name": "YouTube",
+      "mirror_path": "upstream/blackmatrix7/YouTube.list",
+      "published_path": "rules/YouTube.list",
+      "baseline_rules": 190
+    },
+    {
+      "id": "blackmatrix7-apple_all",
+      "name": "Apple",
+      "mirror_path": "upstream/blackmatrix7/Apple_All.list",
+      "published_path": "rules/Apple.list",
+      "baseline_rules": 1615
+    },
+    {
+      "id": "blackmatrix7-openai",
+      "name": "OpenAI",
+      "mirror_path": "upstream/blackmatrix7/OpenAI.list",
+      "published_path": "rules/OpenAI.list",
+      "baseline_rules": 35
+    },
+    {
+      "id": "blackmatrix7-telegram",
+      "name": "Telegram",
+      "mirror_path": "upstream/blackmatrix7/Telegram.list",
+      "published_path": "rules/Telegram.list",
+      "baseline_rules": 46
+    },
+    {
+      "id": "blackmatrix7-netflix",
+      "name": "Netflix",
+      "mirror_path": "upstream/blackmatrix7/Netflix.list",
+      "published_path": "rules/Netflix.list",
+      "baseline_rules": 1158
+    },
+    {
+      "id": "blackmatrix7-spotify",
+      "name": "Spotify",
+      "mirror_path": "upstream/blackmatrix7/Spotify.list",
+      "published_path": "rules/Spotify.list",
+      "baseline_rules": 31
+    }
+  ]
+}
