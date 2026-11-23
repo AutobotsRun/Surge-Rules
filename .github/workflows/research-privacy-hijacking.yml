@@ -37,6 +37,10 @@ jobs:
           assert x["hijacking_suffixes_fully_covered_by_china"] == 64
           assert x["hijacking_ip_ranges_intersecting_privacy_ip_ranges"] == 0
           assert all(not any(matches.values()) for matches in x["protected_host_hits"].values())
+          safe=x["security_endpoint_review"]
+          assert safe["safebrowsing.googleapis.com"]["privacy"] is True
+          assert safe["safebrowsing.urlsec.qq.com"]["privacy"] is True
+          assert not any(safe["safebrowsingohttpgateway.googleapis.com"].values())
           print("Read-only audited output counts confirmed.")
           PY
       - name: Upload statistics (no copied raw lists or personal records)
