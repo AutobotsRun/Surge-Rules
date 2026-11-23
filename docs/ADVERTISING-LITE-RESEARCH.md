@@ -97,3 +97,37 @@ IMPORTANT: These are two different directions of comparison. A candidate's hostn
 3. Create a deterministic fail-closed generator, license notices, exact exclusion tests and version-pinned candidate only after source selection.
 4. Do not mistakenly convert StevenBlack exact HOSTS entries to suffix blocking. That silently changes semantics.
 5. Current PR is research-only. No Advertising-Lite.list, no merge, no Surge or AdGuard Home changes.
+
+
+## Third research round: broader Chinese and Surge-specific repositories (2026-11-23)
+
+Read-only CI, **seven** measured candidates: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45180519754 (success). Baseline validation CI was also green. **No devices edited, no new output subscription.**
+
+### Newly measured priority candidates
+
+| Source | Source URL / format | Source content observed | Candidate simple domain predicates | Candidate domains matched by full Advertising | Candidate matches among four known-good domains |
+| --- | --- | --- | ---: | ---: | --- |
+| AWAvenue Pure Ads (native Surge RULE-SET) | https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/Filters/AWAvenue-Ads-Rule-Surge-RULE-SET-Only.Ads.list | 2026-11-23, 1.7.9, 19,110 bytes, 671 rules (643 DOMAIN, 11 DOMAIN-SUFFIX, 4 DOMAIN-KEYWORD, 13 IP-CIDR) | 651 unique | 361 | None via basic domain + keyword matching |
+| DenzelVincent DNS mini (ABP-style) | https://github.com/DenzelVincent/adblock-dns-aggregator/blob/output/adguard/mini.txt | 2026-11-23, ~6,589 entries, 121,780 bytes in the CI snapshot, 1 line not recognized by simple parser | 6,588 unique simple | 5,861 | Both WeChat PCDN hostnames |
+
+Notes:
+- AWAvenue has four *intentional variants*: only ads, ads+privacy, ads+unwelcome, and all. "Unwelcome" includes PCDN, forced updates, push, and cloud controls. For this user's WeChat/SmartPay experience, **Only.Ads** is the meaningful baseline, not the default all-in-one list. AWAvenue also provides a distinct native Surge RULE-SET variant; do not mistake its domain-set version (dot-prefixed domains) for the RULE-SET variant.
+- The exact native AWAvenue 671-rule file is licensed GPL-3.0. Its basic domain/keyword predicates did not match any of the four current known-good hostnames; this is NOT a guarantee against IP-CIDR, redirect, CNAME, or future rule risks. It covers just 62 of 290,391 existing full Advertising exact+suffix domain predicates in the conservative reverse check; switching would substantially reduce the static rule universe.
+- The DNS mini aggregator imports AWAvenue **full** rules plus AdGuard Chinese in its mini tier (it is not equivalent to Pure Ads). This explains why it still contains both proven WeChat PCDN problem hostnames. It uses a sensible source manifest, threshold checks, allowlist-first filtering and reproducible output; its *approach* deserves consideration, but the 6.6k-domain output is not suitable for direct deployment unmodified. Its program code is MIT; generated content inherits its source licenses, including GPL-3.0.
+- CI sample SHA-256: AWAvenue native 45cb8e7fc318765c85353c5ddfcabd216978288ba271de7f32e085a876319832; Denzel mini 5757ab9a54cb0cc7e621f0bb4ddd820053a89d2e79d93bbefe40ac59982eb033. Data are live snapshots, not frozen releases.
+
+### Other inspected projects: borrow architecture, not their complete lists
+
+| Project | Relevance | Main concern |
+| --- | --- | --- |
+| https://github.com/SukkaW/Surge | Exemplary whitelist management, separate DOMAIN-SET/non-IP/IP rules, clear ordering and REJECT variant design, well-described upstream provenance; active 2026-11-23 | Its published base advertising set is around 120k domain rules (extra ~90k); author expressly suggests Mac for this form of filtering and separate blockers on mobile. AGPL-3.0. Not "Lite" for our iPhone. |
+| https://github.com/Cats-Team/AdRules | Chinese ads, HTTPDNS and PCDN coverage, multi-format output, explicit provenance (Source.md), Surge RULE-SET published | More than 210k DOMAIN-SUFFIX rules in the 2026-11-23 Surge output; intentionally blocks PCDN and HTTPDNS. Not an appropriate low-breakage base. Generated artifacts inherit source licenses even though scripts are 0BSD. |
+| https://github.com/JiaDDD/SurgeRuleSet | Short conservative-source recipe (Loyalsoldier reject + Peter Lowe ad servers), daily native Surge generation, good as an audit inspiration | REJECT output lists over 200k entries, not lightweight. Relatively new and unproven for our known false positives; not a recommended replacement. |
+| https://github.com/privacy-protection-tools/anti-AD | Mature China-oriented filter and clear "discretion" directory documenting intentionally controversial rules (including DNS) | That policy is already implicated in our WeChat DNS false positive. Borrow its disclosure method, not that domain decision. |
+| https://github.com/belcheckyoung/Belcheck-QX-AdBlock | Real-traffic validation methodology, narrow ad-specific endpoints, app-by-app evidence, conservative fail-open handling when uncertain | Quantumult X-specific scripts/rewrites, not drop-in Surge domain list; README explicitly prohibits redistribution/mirroring, so only study principles, do not copy. |
+
+### Revised engineering plan
+
+**First candidate to prototype after separate authorization:** AWAvenue Pure Ads (native Surge 671 rules) as the small China-app advertisement core; examine a second independent, proven international ad/tracker baseline separately. Retain Privacy and Hijacking subscriptions at first to isolate the variable. Any AWAvenue-only trial must inspect 13 IP-CIDR entries and reject policy behavior on shared hosts, and verify known good connections and actual ad misses.
+
+The goal is measured breakage vs ad-block tradeoffs and explainable per-category sources, **not** a target line count. Candidates cannot be merged or distributed as licensed third-party copied rules until their attribution/GPL conditions are met. Do not publish private Surge request logs. The initial draft PR should remain research-only.
