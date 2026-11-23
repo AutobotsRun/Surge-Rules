@@ -21,7 +21,7 @@
 
 1. 审核并合并初始化机制的 PR；在主分支上线之前，计划任务不会执行。
 2. 在 GitHub `Settings > Actions > General` 核查是否允许 Actions 使用 `GITHUB_TOKEN` 创建 Pull Request。若仓库禁止，该流程会报错而不是绕过限制。
-3. 可在 GitHub Actions 手动运行一次 `Audit upstream Surge rules` 以建立首次 SHA-256 基线。首次运行创建含 21 个来源指纹的草稿 PR，但不下载规则到仓库。
+3. 可在 GitHub Actions 手动运行一次 `Audit upstream Surge rules` 以建立首次 SHA-256 基线。首次运行创建含 21 个来源指纹的草稿 PR，但不把监测模式的规则内容下载到仓库。审计工作流会在联网前、创建 PR 前分别运行完整离线单元测试和状态校验；这是必要的，因为由 `GITHUB_TOKEN` 创建的 PR 不应被假定会自动触发 `pull_request` 工作流。
 4. 打开 PR 的 Files changed，查看新增/改变的 SHA-256、有效规则数、文件大小。监测模式只提供指纹变化；**想审查具体变化，应打开原作者的源文件/提交 diff**。
 5. 内容异常、大量删除、规则类型不兼容、来源或许可无法确认时，不要合并。审查通过后，手工将草稿设为 Ready for review，再人工合并。
 6. 审计工作流发现已有 `automation/upstream-audit-` 草稿 PR 时不会覆盖它；必须先处理旧 PR 才会生成下一份。
