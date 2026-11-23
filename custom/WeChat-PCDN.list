@@ -1,0 +1,8 @@
+# WeChat PCDN false-positive exception
+# Observed 2026-11-23: blackmatrix7 Advertising_All.list rejected
+# apd-pcdnwxlogin.teg.tencent-cloud.net on iPhone 15 Pro.
+# After a temporary DIRECT override, WeChat video playback recovered
+# on both cellular and Wi-Fi; causal attribution remains provisional.
+# RULE-SET has no embedded policy; the Surge profile must specify DIRECT.
+# Keep this exception narrow; do not allow the entire tencent-cloud.net domain.
+DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net
