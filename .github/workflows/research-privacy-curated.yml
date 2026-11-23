@@ -1,0 +1,59 @@
+name: Review curated Privacy Safe Browsing exception (no deployment)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/build_privacy_curated_test.py"
+      - "tests/test_privacy_curated_test.py"
+      - ".github/workflows/research-privacy-curated.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Check syntax and unit tests without network
+        run: |
+          python3 -m py_compile scripts/build_privacy_curated_test.py
+          python3 -m unittest discover -s tests -p 'test_privacy_curated_test.py' -v
+      - name: Confirm existing Google route already covers the endpoint
+        run: |
+          grep -Fx 'DOMAIN-SUFFIX,googleapis.com' rules/Google.list
+          test -f sources/blackmatrix7/LICENSE
+      - name: Build test-only Privacy variant from pinned public Git blob
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/build_privacy_curated_test.py > /tmp/privacy-curated-test-only-build-summary.json
+      - name: Verify one-entry deletion and manifest without deployment
+        run: |
+          python3 - <<'PY'
+          import json, hashlib
+          from pathlib import Path
+          root=Path('/tmp/privacy-curated-test-only')
+          payload=(root/'Privacy-Curated-TEST.list').read_bytes()
+          m=json.loads((root/'manifest.json').read_text())
+          assert m['upstream_rule_count']==39936
+          assert m['curated_rule_count']==39935
+          assert m['deleted_rule']=='DOMAIN,safebrowsing.googleapis.com'
+          assert m['candidate_sha256']==hashlib.sha256(payload).hexdigest()
+          assert b'DOMAIN,safebrowsing.googleapis.com\n' not in payload
+          assert b'DOMAIN,safebrowsing.urlsec.qq.com\n' in payload
+          assert b'DOMAIN-SUFFIX,google-analytics.com\n' in payload or len(payload)>500000
+          assert (root/'LICENSE.GPL-2.0.txt').stat().st_size>10000
+          print('Candidate is valid, safe-browser rule removed, no production edits.')
+          PY
+      - name: Upload test archive to Draft PR only
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: privacy-curated-test-only-not-deployed
+          path: /tmp/privacy-curated-test-only/
+          retention-days: 7
