@@ -68,6 +68,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(result["broad_ipv4_under_24"], 1)
         self.assertEqual(result["broad_ipv6_under_64"], 0)
         self.assertEqual(result["invalid"], 2)
+        self.assertEqual(result["single_ipv4_32"], 1)
+        self.assertEqual(result["single_ipv6_128"], 1)
+        self.assertEqual(result["with_no_resolve"], 2)
+        self.assertEqual(result["without_no_resolve"], 2)
 
     def test_hosts_remain_exact_when_compared_to_existing_rules(self):
         exact, unsupported = liteaudit.candidate_rules(
@@ -98,6 +102,52 @@ class Tests(unittest.TestCase):
         self.assertEqual(result["hosts_already_covered_by_native_exact_or_suffix"], 2)
         self.assertEqual(result["estimated_merged_native_rule_count"], 1204)
         self.assertFalse(any(result["known_good_matched_by_domain_or_keyword"].values()))
+
+    def test_suffix_mode_preserves_native_exact_semantics(self):
+        native = (
+            b"DOMAIN,already.example.com\n"
+            b"DOMAIN-SUFFIX,covered.example.com\n"
+        )
+        extra = b"".join(
+            ("0.0.0.0 x%d.adexample.net\n" % i).encode()
+            for i in range(1200)
+        )
+        hosts = (
+            b"0.0.0.0 already.example.com\n"
+            b"0.0.0.0 child.covered.example.com\n" + extra
+        )
+        exact = liteaudit.study_small_pair(native, hosts, "exact")
+        suffix = liteaudit.study_small_pair(native, hosts, "suffix")
+        self.assertEqual(exact["hosts_already_covered_by_native_rules"], 2)
+        self.assertEqual(suffix["hosts_already_covered_by_native_rules"], 1)
+        self.assertEqual(exact["estimated_merged_native_rule_count"], 1202)
+        self.assertEqual(suffix["estimated_merged_native_rule_count"], 1203)
+
+    def test_suffix_expansion_fails_closed_on_verified_good_domain(self):
+        native = b"DOMAIN,unrelated.example.com\n"
+        hosts = (b"0.0.0.0 tencent-cloud.net\n" +
+                 b"".join(("0.0.0.0 x%d.adexample.net\n" % i).encode()
+                          for i in range(1200)))
+        result = liteaudit.study_small_pair(native, hosts, "exact")
+        self.assertFalse(any(result["known_good_matched_by_domain_or_keyword"].values()))
+        with self.assertRaisesRegex(ValueError, "known-good"):
+            liteaudit.study_small_pair(native, hosts, "suffix")
+
+    def test_unsafe_public_suffix_is_rejected_before_study(self):
+        native = b"DOMAIN,unrelated.example.com\n"
+        hosts = (b"0.0.0.0 co.uk\n" +
+                 b"".join(("0.0.0.0 x%d.adexample.net\n" % i).encode()
+                          for i in range(1200)))
+        with self.assertRaisesRegex(ValueError, "public suffix"):
+            liteaudit.study_small_pair(native, hosts, "suffix")
+
+    def test_sensitive_wechat_hosts_are_review_flags_not_proven_false_positives(self):
+        native = b"DOMAIN,wxa.wxs.qq.com\n"
+        hosts = b"".join(("0.0.0.0 x%d.adexample.net\n" % i).encode()
+                         for i in range(1200))
+        pair = liteaudit.study_small_pair(native, hosts, "exact")
+        self.assertIn("wxa.wxs.qq.com", pair["native_potential_functional_hosts_for_review"])
+        self.assertFalse(any(pair["known_good_matched_by_domain_or_keyword"].values()))
 
 
 if __name__ == "__main__":
