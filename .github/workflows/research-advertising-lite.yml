@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   compare:
@@ -40,6 +40,40 @@ jobs:
           path: /tmp/advertising-lite-surge-test-only/
           if-no-files-found: error
           retention-days: 7
+      # Explicitly limited to this owner's same-repo PR #12. This one-time
+      # research-branch publication makes a pinned, attributed test resource
+      # reachable by Surge iOS; it cannot write the production/default branch.
+      - name: Publish TEST-ONLY bundle to the research branch
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 12 && github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if [ "$HEAD_BRANCH" != "research/advertising-lite-source-comparison" ]; then
+            echo "Unexpected branch"; exit 1
+          fi
+          git fetch --no-tags origin "refs/heads/$HEAD_BRANCH"
+          git checkout -B "$HEAD_BRANCH" "FETCH_HEAD"
+          dest="experiments/advertising-lite"
+          mkdir -p "$dest"
+          # A published test snapshot must never be silently replaced.
+          if [ -e "$dest/Advertising-Lite-TEST.list" ]; then
+            test "$(sha256sum "$dest/Advertising-Lite-TEST.list" | cut -d' ' -f1)" = "240347ee54b5baee112535ea647a8cce4878bba5b971924072066bdedf8ed0a7"
+            echo "Pinned test artifact already published; no changes."
+            exit 0
+          fi
+          cp /tmp/advertising-lite-surge-test-only/Advertising-Lite-TEST.list "$dest/"
+          cp /tmp/advertising-lite-surge-test-only/LICENSE.GPL-3.0.txt "$dest/"
+          cp /tmp/advertising-lite-surge-test-only/THIRD_PARTY_NOTICES.md "$dest/"
+          cp /tmp/advertising-lite-surge-test-only/manifest.json "$dest/"
+          test "$(sha256sum "$dest/Advertising-Lite-TEST.list" | cut -d' ' -f1)" = "240347ee54b5baee112535ea647a8cce4878bba5b971924072066bdedf8ed0a7"
+          git add -- "$dest"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m 'test: publish pinned, attributed 2890-rule Lite bundle on research branch only'
+          auth="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" \
+            push origin "HEAD:refs/heads/$HEAD_BRANCH"
       - name: Upload statistics only (not original blocklists)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
