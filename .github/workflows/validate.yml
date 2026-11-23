@@ -32,4 +32,6 @@ jobs:
       - name: Unit tests (offline)
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Offline validation only (no upstream downloads)
-        run: python3 scripts/audit_upstreams.py
+        run: |
+          python3 scripts/audit_upstreams.py
+          python3 scripts/build_service_rules.py --check
