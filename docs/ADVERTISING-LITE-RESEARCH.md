@@ -1,5 +1,7 @@
 # Advertising Lite: comparison of three sources
 
+> **Correction (2026-11-24 — independent iCloud accounts):** The user confirmed spare iPhone 15 Pro and main iPhone Air use **different iCloud accounts**. Earlier speculation that edits to spare's iCloud Drive Shadow profile could auto-sync to the primary iPhone was incorrect. Device-model conditional entries remain harmless but are **not necessary to protect the primary**. Any comment elsewhere in this historical experiment log about an iCloud-*shared* profile is superseded by this correction. Do not change the primary profile based on the spare controller's observations.
+
 Research stage (November 23, 2026). No new advertising subscription is published or deployed.
 
 Candidates:
