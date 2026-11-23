@@ -7,7 +7,6 @@ No regex substitution and no broad allowlist. On failure, no output overwritten.
 """
 import argparse
 import hashlib
-import ipaddress
 import json
 from pathlib import Path
 import re
@@ -19,7 +18,7 @@ CONFIG = ROOT / "config/advertising-exclusions.json"
 OUTPUT = ROOT / "rules/Advertising.list"
 MAX_BYTES = 64 * 1024 * 1024
 MAX_LINES = 1_500_000
-MIN_RULES = 1000
+MIN_RULES = 250000
 
 
 def load_exclusions(config):
@@ -42,30 +41,25 @@ def load_exclusions(config):
     return cfg, approved
 
 
+# These need manual review as an immutable set. A changed fingerprint fails closed.
+COMPLEX_TYPES = {"URL-REGEX", "AND", "OR", "NOT", "DOMAIN-WILDCARD", "RULE-SET", "DOMAIN-SET"}
+
+
 def covering_rule(rule, hostname):
     fields = rule.split(",")
     kind = fields[0].upper()
     value = fields[1].lower().strip() if len(fields) > 1 else ""
-    if kind == "DOMAIN" and value == hostname:
-        return True
-    if kind == "DOMAIN-SUFFIX" and (hostname == value or hostname.endswith("." + value)):
-        return True
-    if kind == "DOMAIN-KEYWORD" and value and value in hostname:
-        return True
-    if kind == "DOMAIN-WILDCARD":
-        # Conservative: any wildcard is escalated for human review, not blindly removed.
-        return True
-    if kind in ("URL-REGEX", "AND", "OR", "NOT", "RULE-SET", "DOMAIN-SET"):
-        # Can't safely prove non-overlap without real rule evaluation.
-        return True
-    if kind in ("IP-CIDR", "IP-CIDR6", "IP-ASN", "GEOIP"):
-        # Address-only rules cannot be safely excluded for a hostname at compile time.
-        # Report separately, but they do not trigger mass deletion.
-        return False
+    if kind == "DOMAIN":
+        return value == hostname
+    if kind == "DOMAIN-SUFFIX":
+        return hostname == value or hostname.endswith("." + value)
+    if kind == "DOMAIN-KEYWORD":
+        return bool(value) and value in hostname
+    # IP rules are conditional on resolved addresses; not provable from hostname.
+    # Complex matchers are reviewed as a complete, hashed set below.
     return False
 
-
-def transform(raw, exclusions, strict=True):
+def transform(raw, exclusions, strict=True, reviewed_complex=None):
     if len(raw) > MAX_BYTES:
         raise ValueError("Upstream exceeds 64 MiB limit")
     data = raw.decode("utf-8-sig")
@@ -89,6 +83,16 @@ def transform(raw, exclusions, strict=True):
             cleaned.append(original)
     if sorted(x.lower() for x in removed) != sorted(x.lower() for x in exclusions):
         raise ValueError("Expected EXACT exclusion missing or duplicated. STOP; inspect upstream changes.")
+    complex_rules = [line.strip() for line in cleaned
+                     if line.strip() and line.strip().split(",", 1)[0] in COMPLEX_TYPES]
+    digest = hashlib.sha256("\\n".join(complex_rules).encode("utf-8")).hexdigest()
+    if complex_rules:
+        if (not reviewed_complex
+                or reviewed_complex.get("sha256") != digest
+                or reviewed_complex.get("count") != len(complex_rules)):
+            raise ValueError("Complex rules differ from reviewed baseline; STOP for manual review")
+    elif reviewed_complex and reviewed_complex.get("count"):
+        raise ValueError("Reviewed complex rules disappeared; inspect upstream")
     risks = []
     for line in cleaned:
         s = line.strip()
@@ -124,7 +128,7 @@ def main():
     args = ap.parse_args()
     cfg, excluded = load_exclusions(CONFIG)
     raw = args.input.read_bytes()
-    result, removed, count = transform(raw, excluded)
+    result, removed, count = transform(raw, excluded, reviewed_complex=cfg.get("reviewed_complex_rules"))
     info = {
         "upstream_url": cfg["source"],
         "upstream_sha256": hashlib.sha256(raw).hexdigest(),
