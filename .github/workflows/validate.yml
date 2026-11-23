@@ -3,6 +3,7 @@ name: Validate Surge rules and source catalog
 on:
   pull_request:
     paths:
+      - "adguard/**"
       - "custom/**"
       - "upstream/**"
       - "upstreams/**"

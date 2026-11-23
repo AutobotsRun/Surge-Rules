@@ -1,0 +1,13 @@
+# AutobotsRun / AdGuard Home - reviewed DNS allowlist
+# Scope: DNS exceptions only. Changes require evidence and review.
+# Updated: 2026-11-23. Apply via Filters > DNS allowlists.
+
+# WeChat PCDN connectivity
+@@||apd-pcdnwxlogin.teg.tencent-cloud.net^
+@@||apd-pcdnwxstat.teg.tencent-cloud.net^
+
+# WeChat DNS (anti-AD false positive during iPhone 15 Pro testing)
+@@||dns.weixin.qq.com.cn^
+
+# SmartPay mini program (login / account pages; repeated timeouts fixed by exception)
+@@||smartpay-admin.fugetech.com^
