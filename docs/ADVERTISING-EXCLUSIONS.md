@@ -44,3 +44,12 @@ GitHub 仓库文件接口对上游这个大型列表没有返回完整正文。�
 - 本地生成的候选 `Advertising.list`：291,173 条有效规则，即**仅减少 1 条 DOMAIN**；SHA-256 `ed3efe720f6ffa23b44e8923b3fa02091028f00e6cfcb3b40b94ab00e1ab52f7`。
 - 现有 14 条 URL 正则中，有两条不限制域名、仅检查 URL 路径。它们并未随着域名排除而删除，因此不能保证任意路径均不会触发广告拦截；还必须在实验机用实际连接确认。单纯从规则集分析也无法保证未来新增 IP 规则不会影响该服务。
 - GitHub 当前尚未生成/发布 `rules/Advertising.list`，以上 SHA 只对应本地审查的候选文件，不代表已在设备启用。构建程序的更新仍须通过 GitHub Actions 验证。
+
+
+## CI 与仓库权限（验证顺序）
+
+- PR #3 的 `Validate advertising exclusions` 已在 GitHub Actions 通过语法及 9 项单元测试（运行 ID 45126372836）。
+- `Propose curated advertising rules` 新增 **pull_request 只读验证**：实时下载上游文件、调用同一个生成器、复查生成结果；不提交任何文件、不创建 PR、不发布，也不接触设备。
+- 只有 `schedule` 或 `workflow_dispatch` 事件才允许进入 `propose` 任务；该任务才申请 `contents: write` 与 `pull-requests: write`。
+- GitHub 个人仓库默认可能禁止 Actions 创建 PR。正式合并启用前，需要在 `Settings → Actions → General → Workflow permissions` 核实 `Allow GitHub Actions to create and approve pull requests` 是否允许；本项目仍坚持**禁止自动合并及自动设备部署**。
+- 若只读验证失败，必须看失败日志并修正原因，不得仅通过关闭校验来发布巨型规则集。
