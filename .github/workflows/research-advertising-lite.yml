@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "scripts/research_advertising_lite.py"
+      - "scripts/preview_advertising_lite.py"
       - "tests/test_advertising_lite_research.py"
+      - "tests/test_advertising_lite_preview.py"
       - ".github/workflows/research-advertising-lite.yml"
   workflow_dispatch:
 
@@ -20,9 +22,11 @@ jobs:
         with:
           persist-credentials: false
       - name: Test conservative source parsing offline
-        run: python3 -m unittest discover -s tests -p test_advertising_lite_research.py -v
+        run: python3 -m unittest discover -s tests -p 'test_advertising_lite*.py' -v
       - name: Compare public sources without any deployment
         run: python3 scripts/research_advertising_lite.py
+      - name: Memory-only preview against pinned sources (counts and hash only)
+        run: python3 scripts/preview_advertising_lite.py
       - name: Upload statistics only (not original blocklists)
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
