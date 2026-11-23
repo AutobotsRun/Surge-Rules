@@ -423,3 +423,24 @@ The existing scripts/audit_privacy_hijacking.py now also reports china_internal_
 Then confirm geo2.adobe.com matches original Hijacking REJECT and other test cases match original. Do not alter Lite or Privacy.
 
 **Status:** live rule-set cutover and representative rule matching verified; no claim of long-term Adobe or other app functional testing. PR #13 remains Draft, unrelated Google/DNS configuration unchanged.
+
+
+## Eighth round: official Apple Safari/Tencent and Microsoft routing verification (2026-11-24)
+
+The user clarified that spare iPhone 15 Pro and main iPhone Air have separate iCloud accounts. Rule testing and live amendments remain confined to the spare. Device-model requirements on the spare are optional redundancy, not cross-account safety controls.
+
+### Apple official Safari security source
+
+Apple's privacy disclosure (https://www.apple.com/legal/privacy/data/en/safari/) explicitly states that Safari, when Fraudulent Website Warning is enabled, may check against **Google Safe Browsing and Apple**, and **may additionally use Tencent Safe Browsing when the iPhone region in Settings > General > Language & Region is set to mainland China or Hong Kong**. Importantly, this condition refers to the **device region setting**, not the Apple Account / iCloud account country. Historical network records also connect safebrowsing.urlsec.qq.com to that Safari/Tencent function (https://hechen.github.io/post/%E5%85%B3%E4%BA%8E%E4%B8%80%E6%AC%A1-ss-%E6%B5%81%E9%87%8F%E4%B8%A2%E5%A4%B1%E7%9A%84%E8%BF%87%E7%A8%8B%E8%AE%B0%E5%BD%95/). This makes the existing Privacy REJECT for that hostname a *higher-confidence safety-feature compatibility candidate* than a random tracker hostname, but Apple does not publish evidence here that every device or OS release connects to this exact legacy hostname.
+
+The Tencent hostname remains blocked in **both** Privacy-Curated and AdGuard Home DNS (0.0.0.0). Whether to bypass Tencent is a *privacy/security trade-off*, not categorically right or wrong. Do NOT whitelist blindly, do NOT turn off Safari Fraudulent Website Warning as a test, and do NOT claim Safari is broken without device-specific evidence. Google Safe Browsing's previously blocked host was removed from curated Privacy and is successfully handled by existing Google.list.
+
+### Microsoft official worldwide vs 21Vianet network guidance
+
+Microsoft docs distinguish [Worldwide Microsoft 365 endpoints](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges?view=o365-worldwide) from [Microsoft 365 operated by 21Vianet](https://learn.microsoft.com/en-us/microsoft-365/enterprise/urls-and-ip-address-ranges-21vianet?view=o365-worldwide); Microsoft also recommends selective direct routing for certain Microsoft 365 endpoints rather than assuming every Microsoft-named hostname should proxy (https://learn.microsoft.com/en-us/microsoft-365/enterprise/microsoft-365-network-connectivity-principles?view=o365-worldwide). Therefore broad China_All DOMAIN-KEYWORD,microsoft does **not** distinguish global services (e.g. graph.microsoft.com and login.microsoftonline.com) from China-specific clouds, but universal proxying is also not proven to be the best policy. A future exception or curated China branch should derive from actual observed app requirements and regional endpoint classification, not automatically delete the keyword during another rule-set's A/B trial.
+
+### Huawei Cloud Singapore range, current ASN verified
+
+BGP announcements identify the 114.119.160.0/21 Hijacking block as part of Huawei Cloud Singapore AS136907 (https://bgp.he.net/AS136907). Its current ASN ownership confirms it is real cloud infrastructure, not that all hosts are safe. Hijacking-Curated-TEST.list deliberately kept the full /21 for now; no real connection failures attributable to this exact subnet have been observed in the spare's bounded Surge request history. Future reduction should require IP-specific evidence and replacement of overly broad source rules only after testing.
+
+**Current live spare baseline:** 2,890-rule Advertising Lite, 39,935-rule Privacy Curated, 227-rule Hijacking Curated, original China_All 3,752. All three new lists were checked for ready status and actual representative match behavior. No further network/security-filter changes were made in this eighth audit.
