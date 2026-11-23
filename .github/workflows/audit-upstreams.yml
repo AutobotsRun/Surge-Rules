@@ -46,7 +46,7 @@ jobs:
           if [ -d upstream/ ]; then
             git add -A -- upstream/
           fi
-          git add -A -- rules/Google.list rules/YouTube.list rules/Apple.list rules/OpenAI.list rules/Telegram.list rules/Netflix.list rules/Spotify.list
+          git add -A -- rules/Google.list rules/YouTube.list rules/Apple.list rules/OpenAI.list rules/Telegram.list rules/Netflix.list rules/Spotify.list rules/HBO.list
           if git diff --cached --quiet; then
             echo "All monitored rules unchanged."
             exit 0

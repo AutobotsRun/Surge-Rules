@@ -77,10 +77,10 @@
     {
       "id": "blackmatrix7-hbo",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/HBO/HBO.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/HBO.list"
     },
     {

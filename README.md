@@ -20,13 +20,13 @@
 | [custom/WeChat-CDN.list](custom/WeChat-CDN.list) | 四条精确 CDN IP 例外 | 自定义源文件 |
 | [custom/WeChat-PCDN.list](custom/WeChat-PCDN.list) | 微信 PCDN 域名例外 | 自定义源文件 |
 
-## 候选的七套服务规则（本 PR）
+## 已审核的八套服务规则
 
-`Google`、`YouTube`、`Apple`、`OpenAI`、`Telegram`、`Netflix`、`Spotify` 将分别生成 `rules/<Service>.list`。这些文件保留上游全部匹配谓词及原有顺序，只加来源与修改说明；对应原始快照位于 `upstream/blackmatrix7/`。
+`Google`、`YouTube`、`Apple`、`OpenAI`、`Telegram`、`Netflix`、`Spotify`、`HBO` 分别发布为 `rules/<Service>.list`。这些文件保留上游全部匹配谓词及原有顺序，只加来源与修改说明；对应原始快照位于 `upstream/blackmatrix7/`。
 
-**这些候选现在没有部署到任何设备**。必须先完成 PR 审核与合并，随后另行批准逐条实验机测试。
+前七套已在 iPhone 15 Pro 逐条切换到审核后固定版本；HBO 仍需先通过 PR 校验与合并，随后在这台实验机上单独验证。其他设备不动。
 
-具体来源、GPL-2.0 许可、规则数量、自动构建和风险提示见 [七套服务规则维护手册](docs/MANAGED-SERVICES.md)。
+具体来源、GPL-2.0 许可、规则数量、自动构建和风险提示见 [八套服务规则维护手册](docs/MANAGED-SERVICES.md)。
 
 ## 上游监测与同步
 
