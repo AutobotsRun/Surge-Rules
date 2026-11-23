@@ -1,0 +1,46 @@
+name: Review Safari Safe Browsing privacy and DNS allow (research only)
+
+on:
+  pull_request:
+    paths:
+      - "adguard/allowlist.txt"
+      - "experiments/privacy-curated/Privacy-Safari-TEST.list"
+      - "scripts/verify_safari_safebrowsing_candidate.py"
+      - ".github/workflows/research-safari-safe-browsing.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Python syntax check
+        run: python3 -m py_compile scripts/verify_safari_safebrowsing_candidate.py
+      - name: Check pinned original content and exact two-rule deletion
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/verify_safari_safebrowsing_candidate.py > /tmp/safari-safe-browsing-review.json
+          python3 - <<'PY'
+          import json
+          x=json.load(open('/tmp/safari-safe-browsing-review.json',encoding='utf-8'))
+          assert x['original_rules']==39936
+          assert x['candidate_rules']==39934
+          assert x['adguard_allow_count']==5
+          assert x['deleted_exact_rules']==[
+            'DOMAIN,safebrowsing.googleapis.com',
+            'DOMAIN,safebrowsing.urlsec.qq.com'
+          ]
+          print('Pinned candidate and exact DNS proposal verified. NOT DEPLOYED.')
+          PY
+      - name: Confirm no production RULE-SET files changed
+        run: |
+          test -f sources/blackmatrix7/LICENSE
+          grep -Fx '@@||safebrowsing.urlsec.qq.com^' adguard/allowlist.txt
+          grep -Fx 'DOMAIN-SUFFIX,googleapis.com' rules/Google.list
