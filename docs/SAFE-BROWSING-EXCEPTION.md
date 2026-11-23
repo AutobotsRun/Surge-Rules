@@ -159,3 +159,60 @@ Verified real Surge matches after staging:
 **Next assistant verification once user has opened the main app:** check resource No index has disappeared and analytics.strava.com is REJECT by Privacy-Curated-TEST.list itself rather than the old fallback; then explicitly decide whether to retire the fallback on spare only and remove the redundant Google exception. Do not treat ready=true without matching proof as success.
 
 **Do not assume the user has opened Surge or that indexing has completed.**
+
+
+## Spare iPhone Privacy cutover verified after main-app indexing (2026-11-23)
+
+The user opened the main Surge iOS app on the spare iPhone 15 Pro as requested. The controller then showed the curated Privacy resource had ready=true **and no index error**, and most importantly the actual matching engine selected Privacy-Curated-TEST.list for analytics.strava.com and safebrowsing.urlsec.qq.com. This satisfied the staging gate that the prior aborted attempt could not pass.
+
+### Two-stage cutover and effective outcomes
+
+1. Kept the curated Privacy list conditional on DEVICE_MODEL=='iPhone16,1'; made the original upstream Privacy_All conditional on **other models only**, leaving the spare's existing earlier exact Google exception temporarily active.
+2. Verified Privacy-Curated-TEST.list REJECT for tracker/security test domains; Advertising-Lite-TEST.list REJECT for ad.qq.com/pagead2.googlesyndication.com; original four confirmed WeChat/SmartPay Direct exception routes.
+3. Removed the now redundant earlier exact rule for safebrowsing.googleapis.com on the spare.
+4. **Final actual rule matching:** safebrowsing.googleapis.com and safebrowsingohttpgateway.googleapis.com now both route through the existing self-maintained Google.list US policy. The curated Privacy does not reject the former. The Tencent security host remains a Privacy-Curated REJECT.
+5. The curated Privacy, Lite, Google and Hijacking external resources all report ready=true and no error. Main iPhone Air and other device models retain the original upstream Privacy_All by unchanged model-specific condition; their runtime was not independently queried.
+
+Current relevant Surge configuration at end of verified cutover:
+
+    # Privacy
+    # SPARE-IP15PRO-PRIVACY-TEST: curated on spare; original full Privacy on other device models.
+    #!REQUIREMENT DEVICE_MODEL=='iPhone16,1' RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/ed558890190af404456b7ca5d68ac119cd087566/experiments/privacy-curated/Privacy-Curated-TEST.list,REJECT
+    RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Privacy/Privacy_All.list,REJECT //!REQUIREMENT DEVICE_MODEL!='iPhone16,1'
+
+The earlier one-line conditional Google Safe Browsing API rule has been **removed from the active profile**; the Google suffix in the 703-rule self-maintained Google.list now handles it naturally.
+
+### Post-cutover regression matrix (all from actual Surge match_rule evaluation)
+
+| Destination | Effective result | Responsible list |
+|---|---|---|
+| safebrowsing.googleapis.com | US proxy | Google.list |
+| safebrowsingohttpgateway.googleapis.com | US proxy | Google.list |
+| safebrowsing.urlsec.qq.com | REJECT | Privacy-Curated-TEST.list |
+| analytics.strava.com | REJECT | Privacy-Curated-TEST.list |
+| js.users.51.la | REJECT | Advertising-Lite-TEST.list |
+| ad.qq.com | REJECT | Advertising-Lite-TEST.list |
+| pagead2.googlesyndication.com | REJECT | Advertising-Lite-TEST.list |
+| apd-pcdnwxlogin.teg.tencent-cloud.net | Direct | Explicit spare-only exception |
+| apd-pcdnwxstat.teg.tencent-cloud.net | Direct | Explicit spare-only exception |
+| dns.weixin.qq.com.cn | Direct | Explicit spare-only exception |
+| smartpay-admin.fugetech.com | Direct | Explicit spare-only exception |
+| geo2.adobe.com | REJECT | Original Hijacking |
+| www.microsoft.com | Direct | Original China_All keyword |
+
+**Interpretation:** Active predicate matching and external index status are verified. This is not a proof that every application workflow, DNS path or browser security feature will always work, and the Lite/Privacy pair remains a **live A/B observation on the spare**. No AdGuard Home changes were made and PR remains Draft.
+
+### Exact rollback if any compatibility problem appears
+
+Read [Rule] and its current revision with Surge MCP; replace only the two-line model-conditional Privacy stanza with:
+
+    # Privacy
+    RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Privacy/Privacy_All.list,REJECT
+
+If the previously blocked Google API should still be allowed on spare after rollback, also reintroduce the original exact model-scoped exception **before** that Privacy stanza:
+
+    #!REQUIREMENT DEVICE_MODEL=='iPhone16,1' DOMAIN,safebrowsing.googleapis.com,"🇺🇸 US"
+
+Do not remove the Advertising Lite model conditionals, the four WeChat Direct exceptions, or any other Rule section lines. On rollback, re-test actual matching instead of relying on ready=true alone. Preserve iCloud shared-profile model scoping for other devices.
+
+**Status: the spare-device Privacy migration has successfully passed indexed live rule matching; no claims of user-app empirical long-term compatibility or primary-device inspection are made.**
