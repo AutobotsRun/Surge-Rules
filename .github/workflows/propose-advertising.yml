@@ -1,20 +1,65 @@
 name: Propose curated advertising rules (review only)
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/propose-advertising.yml"
+      - "scripts/build_advertising.py"
+      - "tests/test_advertising.py"
+      - "config/advertising-exclusions.json"
   workflow_dispatch:
   schedule:
     - cron: "41 3 * * *" # Only runs after merging to the default branch.
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: surge-advertising-review
   cancel-in-progress: false
 
 jobs:
+  verify-source-on-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Unit test locally on the runner
+        run: python3 -m unittest discover -s tests -p test_advertising.py -v
+      - name: Fetch upstream and validate (read-only; no PR or deployment)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.request import urlopen, Request
+          config = json.loads(Path("config/advertising-exclusions.json").read_text())
+          url = config["source"]
+          if not url.startswith("https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/"):
+              raise RuntimeError("Unexpected source URL")
+          with urlopen(Request(url, headers={"User-Agent": "surge-rules-audit/1.0"}), timeout=75) as reply:
+              if not reply.geturl().startswith("https://raw.githubusercontent.com/"):
+                  raise RuntimeError("Unexpected redirect")
+              data = reply.read(64 * 1024 * 1024 + 1)
+          if len(data) > 64 * 1024 * 1024:
+              raise RuntimeError("Upstream exceeds limit")
+          Path("/tmp/surge-advertising-upstream.list").write_bytes(data)
+          print("Downloaded", len(data), "bytes")
+          PY
+          python3 scripts/build_advertising.py --input /tmp/surge-advertising-upstream.list --report /tmp/surge-advertising-report.json
+          python3 scripts/build_advertising.py --input /tmp/surge-advertising-upstream.list --check
+
   propose:
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
