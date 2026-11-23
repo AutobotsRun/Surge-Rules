@@ -25,6 +25,8 @@ SOURCES = {
     # Peter Lowe original list, obtained through StevenBlack\'s independently updated
     # source mirror. License and attribution must be reviewed before distribution.
     "peter_lowe_hosts_mirror": "https://raw.githubusercontent.com/StevenBlack/hosts/master/data/yoyo.org/hosts",
+    # Official ads-only view (exclude entries tagged as trackers by the maintainer).
+    "peter_lowe_ads_only": "https://pgl.yoyo.org/as/serverlist.php?hostformat=hosts&notrackers=1&showintro=0&mimetype=plaintext",
 }
 DOMAIN = re.compile(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+")
 ADBLOCK = re.compile(r"\|\|([a-z0-9-]+(?:\.[a-z0-9-]+)+)\^")
@@ -35,11 +37,11 @@ KNOWN_GOOD = ["apd-pcdnwxlogin.teg.tencent-cloud.net",
 
 def fetch(name, url):
     p = urlsplit(url)
-    if p.scheme != "https" or p.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io", "small.oisd.nl", "oisd.nl"}:
+    if p.scheme != "https" or p.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io", "small.oisd.nl", "oisd.nl", "pgl.yoyo.org"}:
         raise ValueError("unexpected source: " + name)
     with urlopen(Request(url, headers={"User-Agent": "lite-rule-audit/1.0"}), timeout=90) as response:
         r = urlsplit(response.geturl())
-        if r.scheme != "https" or r.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io", "small.oisd.nl", "oisd.nl"}:
+        if r.scheme != "https" or r.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io", "small.oisd.nl", "oisd.nl", "pgl.yoyo.org"}:
             raise ValueError("unexpected redirect: " + name)
         data = response.read(36 * 1024 * 1024 + 1)
     if not 1000 <= len(data) <= 36 * 1024 * 1024 or data.lstrip().lower().startswith(b"<html"):
@@ -207,7 +209,8 @@ def main():
              ("stevenblack_base", "hosts"),
              ("blackmatrix7_advertising_lite", "surge"), ("oisd_small", "adblock"),
              ("awavenue_surge_only_ads", "surge"), ("denzel_mini", "adblock"),
-             ("peter_lowe_hosts_mirror", "hosts"))
+             ("peter_lowe_hosts_mirror", "hosts"),
+             ("peter_lowe_ads_only", "hosts"))
         ],
         "limits": "Simple exact domains and suffixes only. For native Surge false-positive checks also test DOMAIN-KEYWORD; IP/regex/AND not simulated. Ignores modifiers, exceptions, precedence, DNS/CNAME, traffic distribution. No third-party content is redistributed.",
     }
