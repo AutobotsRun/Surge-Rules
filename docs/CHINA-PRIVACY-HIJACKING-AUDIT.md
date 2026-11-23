@@ -454,3 +454,16 @@ The user confirmed two relevant usage observations:
 - **Microsoft services appear to work when routed Direct.** China_All DOMAIN-KEYWORD,microsoft is broad, but no real user-visible problem has been identified. **Decision: retain current direct routing instead of forcing Microsoft endpoints to proxy.** Revisit only if a particular Microsoft site, identity login, Graph API, Teams, or update flow has demonstrable trouble.
 
 Accordingly, deprioritize the speculative Tencent allowlist and Microsoft keyword rewrite. Do not alter the spare's independently hosted iCloud Surge profile, AdGuard Home DNS filters, or the primary iPhone. The current tested baseline remains Advertising Lite 2,890 / Privacy Curated 39,935 / Hijacking Curated 227 / China_All 3,752. Future work should prioritize real-world false positives and reproducible compatibility evidence rather than optimizing the smallest possible rule count.
+
+
+## Reopened: Safari-using clients require device-specific Safe Browsing checks (2026-11-24)
+
+The earlier decision to deprioritize Tencent Safe Browsing blocking applied only to a Chrome-primary client. It must NOT be automatically generalized to **other devices whose user regularly uses Safari** or whose Safari/iOS region differs. Do not assume remote devices use the connected spare iPhone's Rule section, and do not publish another user's private profile contents in this repository.
+
+Apple's official Safari privacy notice (https://www.apple.com/legal/privacy/data/en/safari/) states that Safari Fraudulent Website Warning may check Google Safe Browsing and Apple, and **may additionally use Tencent Safe Browsing when Settings > General > Language & Region > Region is mainland China or Hong Kong**. This is the DEVICE region setting, not the Apple Account country. The user can verify whether Safari Fraudulent Website Warning is enabled under Settings > Apps > Safari.
+
+On the connected spare iPhone, safebrowsing.urlsec.qq.com currently matches Privacy-Curated REJECT and resolves to 0.0.0.0 via the local AdGuard Home. This demonstrates two active filtering layers ON THAT DEVICE, not verified failure on another iPhone. The exact hostname is historically associated with Safari/Tencent but Apple's general notice does not guarantee that all iOS releases use it.
+
+**Review gate before sharing or recommending any Surge configuration for Safari users:** verify the target phone's iOS device Region, Safari Fraudulent Website Warning setting, **actual** [Rule] ordering and DNS filtering path (including whether AdGuard Home is used), then check real request behavior or a reputable nonmalicious test page where appropriate. If functional interference is supported, consider an exact-host exception limited to the target profile AND a separate DNS allow decision only if DNS sinkholing is confirmed. Such an exception has a privacy tradeoff (Apple notes that providers may log the client IP). Do not disable all Privacy protection, disable Safari warning, or claim existing warnings are broken without evidence.
+
+The existing Chrome-primary spare's tested Lite/Privacy/Hijacking/China baseline remains unchanged. No unverified edits to any other device were made.
