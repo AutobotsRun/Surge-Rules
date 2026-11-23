@@ -61,6 +61,20 @@ class RuleOverlapTests(unittest.TestCase):
         self.assertEqual(audit.compare(p, l)["total_rules_fully_covered"], 0)
         self.assertIsNone(audit.covered("DOMAIN", "abc.example", p))
 
+    def test_security_endpoint_review_is_only_static_classification(self):
+        books = {name: audit.parse_rules(b"") for name in
+                 ("privacy", "lite", "hijacking", "china")}
+        books["privacy"] = audit.parse_rules(
+            b"DOMAIN,safebrowsing.googleapis.com\n"
+            b"DOMAIN,safebrowsing.urlsec.qq.com\n"
+        )
+        result = audit.audit(books)["security_endpoint_review"]
+        self.assertTrue(result["safebrowsing.googleapis.com"]["privacy"])
+        self.assertTrue(result["safebrowsing.urlsec.qq.com"]["privacy"])
+        self.assertFalse(result["safebrowsingohttpgateway.googleapis.com"]["privacy"])
+        self.assertFalse(result["safebrowsingohttpgateway.googleapis.com"]["lite"])
+        self.assertFalse(result["safebrowsingohttpgateway.googleapis.com"]["hijacking"])
+
     def test_china_suffix_cover_is_not_reject_equivalence(self):
         china = audit.parse_rules(b"DOMAIN-SUFFIX,cn\n")
         hijack = audit.parse_rules(b"DOMAIN-SUFFIX,flash.cn\n")
