@@ -191,6 +191,36 @@ def analyze(name, data, mode, refs):
     }
 
 
+
+def study_small_pair(native_ads, hosts_ads_only):
+    """Static, exact-domain merge estimate; never emits a downloadable list."""
+    exact, suffix, types = surge_rules(native_ads)
+    hosts, unsupported = candidate_rules(hosts_ads_only, "hosts")
+    if unsupported or len(hosts) < 1000:
+        raise ValueError("unexpected ads-only hosts format")
+    extra_hosts = {host for host in hosts if not covered(exact, suffix, host)}
+    merged_exact = exact | extra_hosts
+    keywords = {
+        line.split(",", 1)[1].split(",", 1)[0].lower()
+        for line in native_ads.decode("utf-8-sig").splitlines()
+        if line.startswith("DOMAIN-KEYWORD,")
+    }
+    return {
+        "method": "static native RULE-SET + conservative exact-hosts deduplication",
+        "native_rules_total": sum(types.values()),
+        "hosts_ads_only_unique": len(hosts),
+        "hosts_already_covered_by_native_exact_or_suffix": len(hosts) - len(extra_hosts),
+        "hosts_added_as_exact_domain_rules": len(extra_hosts),
+        "estimated_merged_native_rule_count": sum(types.values()) + len(extra_hosts),
+        "known_good_matched_by_domain_or_keyword": {
+            host: covered(merged_exact, suffix, host) or
+                  any(token in host for token in keywords)
+            for host in KNOWN_GOOD
+        },
+        "limits": "Not a published list or measured effectiveness. IP-CIDR is not resolved against known-good domains; keyword, CNAME, updates, and live traffic need further checking."
+    }
+
+
 def main():
     blobs = {name: fetch(name, url) for name, url in SOURCES.items()}
     ref_results = {name: surge_rules(blobs[name]) for name in
@@ -212,6 +242,7 @@ def main():
              ("peter_lowe_hosts_mirror", "hosts"),
              ("peter_lowe_ads_only", "hosts"))
         ],
+        "proposed_awa_plus_peter_ads_only": study_small_pair(blobs["awavenue_surge_only_ads"], blobs["peter_lowe_ads_only"]),
         "limits": "Simple exact domains and suffixes only. For native Surge false-positive checks also test DOMAIN-KEYWORD; IP/regex/AND not simulated. Ignores modifiers, exceptions, precedence, DNS/CNAME, traffic distribution. No third-party content is redistributed.",
     }
     path = Path("/tmp/advertising-lite-comparison.json")
