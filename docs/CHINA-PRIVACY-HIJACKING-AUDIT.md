@@ -342,3 +342,52 @@ The candidate has **227 active rules** and preserves all 185 other suffix rules 
 **Next review topics, not deleted:** Tencent safety API hostname (blocked in Privacy and AdGuard DNS), wide historical 114.119.160.0/21 cloud prefix, and China_All keyword microsoft. No application-level failure has yet justified their removal.
 
 This document and PR are review-only; nothing was deployed to the spare iPhone 15 Pro or the main iPhone Air.
+
+
+## Sixth round: China_All predicate redundancy and real-route spot checks (2026-11-23)
+
+**Source:** pinned, unchanged public China_All source Git blob bba28360d9dc0310b418df6d9fb7dfa76588c895 (3,752 rules).
+
+### Truly redundant entries (without changing effective matching)
+
+Using source type-aware static set containment, the audit found **45 / 3,752 (1.20%)** rules individually covered by OTHER existing rules of the same China set:
+
+| Rule type | Redundant entries | Covering mechanism |
+|---|---:|---|
+| DOMAIN | 2 | Already covered by the broad microsoft keyword |
+| DOMAIN-SUFFIX | 37 | Covered by existing keywords like alipay, aliyun, alicdn, baidu and microsoft |
+| IPv4 IP-CIDR | 6 | Already enclosed by broader CIDR ranges with the same set policy |
+| IPv6 IP-CIDR6 | 0 | No proven containment |
+| Total | **45** | Source labels/policy must remain fixed |
+
+The upstream generator already avoids individual .cn suffix entries because DOMAIN-SUFFIX,cn covers them: **zero** more-specific .cn suffix entries were found, so a previous assumption that there might be hundreds of such obvious duplicates was wrong.
+
+The 45 predicates are strictly redundant **while their covering rules are retained**. It would be incorrect to remove the broad microsoft keyword *and* its covered domains without explicitly reinstating correct narrower routing. Do not equate syntactic redundancy with safe removal of a covering rule.
+
+### Active device spot checks
+
+Read-only Surge matching on the spare iPhone 15 Pro (all from China_All Direct):
+
+- www.microsoft.com: DOMAIN-KEYWORD,microsoft
+- login.microsoftonline.com: DOMAIN-KEYWORD,microsoft
+- graph.microsoft.com: DOMAIN-KEYWORD,microsoft
+- teams.microsoft.com: DOMAIN-KEYWORD,microsoft
+- update.microsoft.com: DOMAIN-KEYWORD,microsoft
+- www.microsoft365.com: DOMAIN-KEYWORD,microsoft
+- azure.microsoft.com: DOMAIN-KEYWORD,microsoft
+
+Unlike these, www.office.com and www.office365.com directly match independently listed .office.com and .office365.com suffix entries. Github.com matches FINAL/Smart rather than China_All.
+
+This establishes **very broad effective direct-routing scope**, not a real network connectivity incident. No current Microsoft service regression was observed in recent requests, and Microsoft's globally distributed hostnames can legitimately be accessed direct or via a chosen proxy depending on user network policy. Do not delete the keyword in a live profile without targeted A/B.
+
+### USER-AGENT capability caveat
+
+31 USER-AGENT entries remain in China_All. Per Surge official iOS documentation, since iOS 15 the non-MITM HTTPS CONNECT User-Agent is unavailable: https://kb.nssurge.com/surge-knowledge-base/zh/technotes/user-agent . Thus these entries have limited effect for ordinary non-MITM HTTPS, but may still apply to other HTTP/MITM scenarios. **Not safe to label all 31 as dead rules**.
+
+### Research follow-up
+
+The existing scripts/audit_privacy_hijacking.py now also reports china_internal_redundancy, with a new synthetic regression test. Its read-only CI asserts exact source-pinned 45-rule redundancy by type, and does not alter or mirror the live China_All file.
+
+**Priority:** Leave China_All active while awaiting the already identified Privacy main-app indexing test. Even after removing all 45 provably redundant entries, the size reduction is small and unproven to improve routing performance. The main value is independent review of overly broad keyword policy, not aggressive shaving of a relatively modest 3,752-rule set.
+
+**No device configuration changes were made in this China audit.**
