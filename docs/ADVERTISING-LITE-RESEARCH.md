@@ -329,3 +329,10 @@ Official device-specific syntax: https://manual.nssurge.com/profile/requirement.
 The actual WeChat mini-program/payment-page and other apps have NOT been retested with Lite, nor has performance been benchmarked. No default branch merge. The research PR stays draft, and the test list does not replace the normal rules/ catalog. The primary iPhone Air may see the shared profile text via iCloud; no rule editing should be done in Surge's UI while the test depends on requirement annotations, because some UI paths can remove such expressions.
 
 Rollback: In the shared Rule section, remove the five experiment-only DEVICE_MODEL=='iPhone16,1' rules (four Direct and one Lite RULE-SET) plus experiment comment; strip the end-of-line DEVICE_MODEL!='iPhone16,1' requirement from the original full Advertising rule, leaving it unqualified. No other changes required.
+
+
+## Tenth round: preliminary real-device WeChat observation under Lite (2026-11-23)
+
+- After switching the spare iPhone 15 Pro to the 2,890-rule Lite external RULE-SET, the user reported that WeChat **had not shown any issues so far**. This is preliminary, positive real-world compatibility feedback, **not a full pass of every WeChat mini-program, payment, media or push flow**.
+- Previously observed full-list WeChat/payment functionality was a different baseline; do not conflate it with the present Lite trial. No changes or allowlist expansions were made in response.
+- Follow-up validation should focus on the previously troublesome mini-program/payment page, official-account media, messages and notifications, plus independent common apps. Record any failures with their specific time and hostname before changing block rules.
