@@ -62,10 +62,23 @@ def validate_source(source):
             raise ValueError("Mirroring requires verified license and explicit approval: " + sid)
         if not source.get("license_url"):
             raise ValueError("Mirroring requires original license URL: " + sid)
-        path = pathlib.PurePosixPath(source["mirror_path"])
-        if (not source["mirror_path"].startswith("upstream/")
-                or ".." in path.parts or path.suffix != ".list"):
+        mirror_path = source.get("mirror_path")
+        if not isinstance(mirror_path, str):
+            raise ValueError("Missing mirror path: " + sid)
+        path = pathlib.PurePosixPath(mirror_path)
+        if (path.is_absolute() or not path.parts or path.parts[0] != "upstream"
+                or ".." in path.parts or ".git" in path.parts
+                or path.suffix != ".list"):
             raise ValueError("Unsafe mirror path: " + sid)
+        target = ROOT
+        for part in path.parts:
+            target = target / part
+            if target.is_symlink():
+                raise ValueError("Mirror path must not traverse symlinks: " + sid)
+        try:
+            target.resolve().relative_to(ROOT.resolve())
+        except (OSError, ValueError):
+            raise ValueError("Mirror path escapes repository: " + sid)
     elif approved:
         raise ValueError("Monitor entries must not claim redistribution approval: " + sid)
 
@@ -126,30 +139,81 @@ def validate_catalog():
     return data["sources"]
 
 
-def validate_state(sources):
+def validate_state(sources, for_sync=False):
+    """Validate the recorded upstream state.
+
+    Offline validation requires an exact catalog/state match. During --sync,
+    newly added catalog entries may be baselined, but removing an existing
+    source requires an explicit reviewed state cleanup. A newly approved
+    mirror may be absent until this sync downloads it; existing mirror files
+    must still match their recorded digest.
+    """
     if not STATE.exists():
         return {}
     state = read_json(STATE)
-    if state.get("schema") != 1:
-        raise ValueError("Unsupported state schema")
-    entries = {item["id"]: item for item in state["sources"]}
-    if len(entries) != len(state["sources"]):
-        raise ValueError("Duplicate state id")
-    if set(entries) != {item["id"] for item in sources}:
-        raise ValueError("State/catalog source list mismatch; run audit")
-    for source in sources:
-        entry = entries[source["id"]]
-        if not re.fullmatch(r"[0-9a-f]{64}", entry["sha256"]):
-            raise ValueError("Malformed fingerprint: " + source["id"])
-        if source["mode"] == "mirror":
-            path = ROOT / source["mirror_path"]
-            if not path.is_file():
-                raise ValueError("Missing mirror file: " + str(path))
-            digest = hashlib.sha256(path.read_bytes()).hexdigest()
-            if digest != entry["sha256"]:
-                raise ValueError("Mirror and approved state differ: " + source["id"])
-    return entries
+    if state.get("schema") != 1 or not isinstance(state.get("sources"), list):
+        raise ValueError("Unsupported or malformed state schema")
+    entries = {}
+    for item in state["sources"]:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str):
+            raise ValueError("Malformed state entry")
+        sid = item["id"]
+        if sid in entries:
+            raise ValueError("Duplicate state id")
+        entries[sid] = item
 
+    current_ids = {item["id"] for item in sources}
+    recorded_ids = set(entries)
+    if for_sync:
+        removed = recorded_ids - current_ids
+        if removed:
+            raise ValueError(
+                "Removing upstreams requires explicit reviewed state cleanup: "
+                + ", ".join(sorted(removed))
+            )
+    elif recorded_ids != current_ids:
+        raise ValueError("State/catalog source list mismatch; run audit")
+
+    for source in sources:
+        sid = source["id"]
+        entry = entries.get(sid)
+        if entry is None:
+            if for_sync:
+                continue
+            raise ValueError("Missing state entry: " + sid)
+        if not re.fullmatch(r"[0-9a-f]{64}", entry.get("sha256", "")):
+            raise ValueError("Malformed fingerprint: " + sid)
+        if type(entry.get("bytes")) is not int or entry["bytes"] <= 0:
+            raise ValueError("Malformed byte count: " + sid)
+        if type(entry.get("lines")) is not int or entry["lines"] <= 0:
+            raise ValueError("Malformed rule count: " + sid)
+
+        stored_mode = entry.get("mode")
+        if stored_mode not in (None, "monitor", "mirror"):
+            raise ValueError("Malformed stored mode: " + sid)
+
+        if source["mode"] == "mirror":
+            mirror_path = source["mirror_path"]
+            if stored_mode == "mirror" and entry.get("mirror_path") != mirror_path:
+                raise ValueError("Changing an existing mirror path requires manual migration: " + sid)
+            path = ROOT / mirror_path
+            if path.exists() and not path.is_file():
+                raise ValueError("Mirror path is not a regular file: " + sid)
+            if path.exists() and stored_mode != "mirror":
+                raise ValueError("Refusing to overwrite an untracked mirror file: " + sid)
+            if not path.is_file():
+                if for_sync:
+                    continue
+                raise ValueError("Missing mirror file: " + str(path))
+            if stored_mode == "mirror":
+                digest = hashlib.sha256(path.read_bytes()).hexdigest()
+                if digest != entry["sha256"]:
+                    raise ValueError("Mirror and approved state differ: " + sid)
+        elif stored_mode == "mirror":
+            raise ValueError(
+                "Disabling a mirror requires explicit reviewed file/state cleanup: " + sid
+            )
+    return entries
 
 def download(url):
     req = urllib.request.Request(url, headers={"User-Agent": "Surge-Rules-Auditor/1.0"})
@@ -174,12 +238,25 @@ def sync(sources, old, report_path):
         if previous and previous.get("lines", 0) >= 100 and count < previous["lines"] * 0.5:
             raise ValueError("Sudden >50% drop in rules for " + sid + "; inspect upstream manually")
         item = {"id": sid, "sha256": hashlib.sha256(data).hexdigest(),
-                "bytes": len(data), "lines": count}
+                "bytes": len(data), "lines": count, "mode": source["mode"],
+                "mirror_path": source.get("mirror_path") if source["mode"] == "mirror" else None}
         staged.append((source, data, item))
         if not previous or previous["sha256"] != item["sha256"]:
             changes.append((sid, source["mode"], previous, item, source["url"]))
         print("Audited", sid, item["lines"], "rules")
     # All fetches and checks must succeed before any tracked file is changed.
+    # Never overwrite a file unless the prior state proves this exact path is
+    # already a managed mirror for this source.
+    for source, data, item in staged:
+        if source["mode"] == "mirror":
+            path = ROOT / source["mirror_path"]
+            previous = old.get(source["id"])
+            if path.exists() and (
+                not previous
+                or previous.get("mode") != "mirror"
+                or previous.get("mirror_path") != source["mirror_path"]
+            ):
+                raise ValueError("Refusing to overwrite an untracked mirror file: " + source["id"])
     for source, data, item in staged:
         if source["mode"] == "mirror":
             path = ROOT / source["mirror_path"]
@@ -217,7 +294,7 @@ def main():
     args = parser.parse_args()
     sources = validate_catalog()
     validate_custom()
-    prior = validate_state(sources)
+    prior = validate_state(sources, for_sync=args.sync)
     if args.sync:
         sync(sources, prior, args.report)
     else:
