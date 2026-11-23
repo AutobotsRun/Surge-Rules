@@ -1,5 +1,8 @@
 # Safari Safe Browsing — Mainland China-compatible configuration proposal
 
+**Final decision (2026-11-24): WITHDRAWN** — After reviewing Apple's Safari privacy disclosure, the user chose to **keep Tencent Safe Browsing blocked**. This supersedes every proposed Tencent exception or DNS allow step below. The owner accepts that Tencent-based Safari checks may not function; do not characterize this as full Safari protection. The single proposed Tencent AdGuard allow was **reverted from this research branch**, and the active main subscription still has the original four reviewed WeChat/payment allows only. The experimental 39,934-rule Safari file is **archived research, not the selected Privacy configuration**. On the spare iPhone, the extra Safari candidate was removed, the working 39,935-rule Privacy Curated reactivated, and live matching reconfirmed safebrowsing.urlsec.qq.com → Privacy REJECT, DNS 10.0.0.6 → 0.0.0.0, Google Safe Browsing → Google.list US, while Lite and Hijacking remained normal. PR #15 is being closed unmerged. Do not deploy this withdrawn proposal to the owner, spouse or spare.
+
+
 **Status: RESEARCH / Draft only. Nothing in this PR is deployed.**
 
 ## Verified evidence
