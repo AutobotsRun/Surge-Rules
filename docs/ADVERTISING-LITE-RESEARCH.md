@@ -169,3 +169,60 @@ Run: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45185449367 (succes
 All four proven-good hostnames returned *no match* under the tested combined domain / keyword predicates. This does **not** evaluate IP resolution against the 13 public-IP rules or real requests; the 2,898-rule calculation is only a structural candidate, not a generated, tested, licensed, or published output. A smaller list may simplify auditing, but the Surge rule-set engine already indexes large domain sets, so do **not** claim demonstrated speed, memory, or battery improvements without a device benchmark (official rule-set documentation: https://manual.nssurge.com/rules/ruleset.html).
 
 **Next gate:** review the four native DOMAIN-KEYWORD predicates, verify Peter Lowe list redistribution permission, add a deterministic exact-host conversion with source acknowledgement, run Surge-compatible parsing and known-good tests, then do a reversible A/B on the spare iPhone 15 Pro only. Keep main iPhone Air on its existing production rules.
+
+
+## Fifth research round: source semantics, keyword/IP and functional-endpoint safety (2026-11-23)
+
+CI evidence: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45186929275 (12/12 research unit tests; read-only source comparison succeeded). Repo-wide validation also succeeded: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45186929262.
+
+### Licensing and author intent
+
+- Peter Lowe's own homepage, https://pgl.yoyo.org/as/, explicitly invites users to **combine the list with other lists and publish the combination** (in the paragraph beginning "Feel free to combine"). It is explicit permission for that described use, not a published standard license that we can assume covers *every* type of sublicensing or warranty. Prominent credit and a live source link should accompany any eventual derived publication.
+- The AWAvenue Only.Ads file links its GNU GPL-3.0 license (https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/LICENSE). Before publishing a derived mixed list, preserve original provenance, relevant GPL notices and copyright, include GPL license text or a compliant route to it, and mark modifications. Do not describe a blended artifact as "MIT" or as wholly original.
+- Peter Lowe's inclusion policy https://pgl.yoyo.org/as/policy.php includes **ad servers, trackers, malware, anti-adblock and other undesirable hosts**. Its notrackers=1 setting removes entries explicitly tagged as trackers, not necessarily every non-advertising category. Therefore **"ads-only" describes the feed parameter, not a verified strict content taxonomy**.
+- The Peter Lowe maintainer specifically favors entries at the highest suitable adserver domain and notes that DNS-zone blocking may cover all its subdomains. A HOSTS-to-exact-DOMAIN translation is conservative **but may underblock** relative to the intended DNS use. Blind HOSTS-to-DOMAIN-SUFFIX conversion is broader and can introduce false positives. Keep both semantics distinct.
+
+### Modelled semantic alternatives
+
+Source snapshot: AWAvenue native Only.Ads 671 rules and Peter Lowe official notrackers=1 2,254 HOSTS entries.
+
+| Modeled conversion for Peter Lowe | Already covered by AWAvenue under that exact rule semantics | Peter Lowe rules newly included | Total including 13 original IP rules | Total with 13 original IP rules omitted |
+| --- | ---: | ---: | ---: | ---: |
+| Conservative exact DOMAIN | 14 | 2,240 | 2,911 | **2,898** |
+| Broad DOMAIN-SUFFIX | 1 | 2,253 | 2,924 | **2,911** |
+
+Suffix-mode deduplication correctly requires existing DOMAIN-SUFFIX coverage. An existing exact DOMAIN rule alone cannot justify deduplicating a prospective suffix entry. These numbers are structural estimates only; a suffix is not equivalent to a single exact host even when line counts are similar. Both simulations passed four known-good hostname checks, but a simulated successful domain check is **not** evidence of IP, CNAME or live traffic safety. Neither model has been exported or published.
+
+### Native AWAvenue detailed safety review
+
+The four exact native keyword tokens are: \`-ad.sm.cn\`, \`-ad.video.yximgs.com\`, \`-ad.wtzw.com\`, and \`-be-pack-sign.pglstatp-toutiao.com\`. All are longer, host-shaped ad identifiers, which is more constrained than a generic token such as \`ad\`. They still use **substring matching anywhere in the host** and must remain individually reviewable; no claim of zero false positives.
+
+All 13 AWAvenue IP-CIDR entries in the audited source are global IPv4 \`/32\` and carry \`no-resolve\`; none is IPv6, broader than /24, syntactically invalid or missing the flag. This reduces unnecessary hostname DNS lookups but does not guarantee safe blocking of potentially shared IP addresses. **Exclude the 13 from any first-stage experimental derivative until real service/IP ownership analysis.**
+
+A manual-review watchlist identifies **eight native exact rules** plausibly associated with functionality rather than solely third-party ads (unverified false-positive risks; no automatic removal or positive/negative categorization in this research PR):
+
+- \`wxa.wxs.qq.com\`
+- \`wximg.wxs.qq.com\`
+- \`wxsmw.wxs.qq.com\`
+- \`wxaintpcos.wxqcloud.qq.com.cn\`
+- \`hybrid.miniapp.taobao.com\`
+- \`mini-prog-drm.vodplayvideo.net\`
+- \`pay.sboot.cn\`
+- \`sdkconfig.video.qq.com\`
+
+These names are public upstream rules, not user request-log observations. Our four locally tested domains do **not** exhaust possible false positives. A first A/B should require explicit review/exclusion decisions for the watchlist, especially the WeChat mini-program endpoints, before enabling REJECT.
+
+### Automated safety additions (read-only)
+
+- Enumerates keyword tokens and the eight potential functional-domain flags in statistics.
+- Validates IP family, prefix, global/public ranges, syntax and \`no-resolve\` usage.
+- Models exact and suffix conversion **separately**.
+- Refuses any proposed-pair simulation if either mode collides with the four verified-good hostnames.
+- Includes tests that intentionally make suffix expansion hit a known-good subdomain and verifies the analysis fails closed, plus a limited catastrophic-public-suffix guard.
+- **Caution:** the short hardcoded dangerous-suffix guard is *not* a Public Suffix List replacement; a real published generator must use a maintained PSL, manually reviewed suffix promotions, and strict source-format checks.
+
+### Next gate before any actual Advertising-Lite.list
+
+Build a reproducible, testable **non-deploying** preview compiler with pinned hashes and required exact exceptions, leaving AWAvenue functional-domain candidates and the 13 IP entries excluded pending manual review. Start with exact Peter Lowe domain semantics; permit explicit suffix promotions only after individual review. Produce source/license notices, SHA-256, and private/test-only artifacts; never expose third-party raw lists or private Surge logs in public GitHub Actions. Final device A/B must be on spare iPhone 15 Pro only, while the main iPhone Air and existing production URLs stay unchanged.
+
+**Status: PR #12 remains draft research, not a new subscription.**
