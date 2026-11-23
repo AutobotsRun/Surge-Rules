@@ -31,6 +31,15 @@ SOURCES = {
 }
 TYPES = ("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD",
          "IP-CIDR", "IP-CIDR6", "USER-AGENT")
+
+# Named functionality endpoints for **review**, not automatic allowlisting.
+# Google documents its standard Safe Browsing API and OHTTP gateway hosts;
+# the Tencent hostname remains a candidate until owner/function is confirmed.
+SECURITY_REVIEW_HOSTS = (
+    "safebrowsing.googleapis.com",
+    "safebrowsingohttpgateway.googleapis.com",
+    "safebrowsing.urlsec.qq.com",
+)
 PROTECTED = (
     "apd-pcdnwxlogin.teg.tencent-cloud.net",
     "apd-pcdnwxstat.teg.tencent-cloud.net",
@@ -161,6 +170,16 @@ def audit(rules):
         "hijacking_ip_ranges_intersecting_privacy_ip_ranges": overlaps,
         "hijacking_wide_ip_ranges": wide,
         "protected_host_hits": protected_hits,
+        "security_endpoint_review": {
+            host: {key: bool(host_match(host, rules[key]))
+                   for key in ("lite", "privacy", "hijacking")}
+            for host in SECURITY_REVIEW_HOSTS
+        },
+        "security_endpoint_caveat": (
+            "Static match only; no proof that Chrome, Safari or another "
+            "installed app actually calls the endpoint, and no assessment of "
+            "AdGuard Home DNS or protected browsing functionality."
+        ),
         "limitation": (
             "These are universal static rule-coverage comparisons. They do not "
             "measure actual blocked traffic, AdGuard Home DNS behavior, "
