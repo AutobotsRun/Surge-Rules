@@ -152,3 +152,20 @@ Read-only nine-source audit: https://github.com/AutobotsRun/Surge-Rules/actions/
 - Two-source experiment to evaluate, still **not authorized to publish**: AWAvenue `Only.Ads` native RULE-SET plus Peter Lowe official `notrackers=1` in exact-domain form, deduplicated by explicit DOMAIN and DOMAIN-SUFFIX coverage only. Report total sizes and static overlaps, then complete provenance/license and iPhone 15 Pro A/B checks before considering a replacement.
 
 **Research interpretation:** Most of Peter Lowe's ads-only domains are already matched by the large current Advertising list. The reason to consider it is a small, curated international baseline with an explicit inclusion policy, **not** greater static blocking coverage. The combined pair's on-device effectiveness and latency have not been measured.
+
+### Verified two-source deduplication (offline model)
+
+Run: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45185449367 (success; 8/8 research tests).
+
+| Quantity | Observed |
+| --- | ---: |
+| AWAvenue Only.Ads native rules | 671 |
+| Peter Lowe ads-only exact HOSTS domains | 2,254 |
+| Peter Lowe domains already covered by AWAvenue DOMAIN / DOMAIN-SUFFIX | 14 |
+| New exact DOMAIN rules from Peter Lowe after deduplication | 2,240 |
+| **Modeled combined native RULE-SET size, retaining 13 AWAvenue IP-CIDR rules** | **2,911** |
+| **Modeled combined size, omitting those 13 IP-CIDR rules for first-phase safety** | **2,898** |
+
+All four proven-good hostnames returned *no match* under the tested combined domain / keyword predicates. This does **not** evaluate IP resolution against the 13 public-IP rules or real requests; the 2,898-rule calculation is only a structural candidate, not a generated, tested, licensed, or published output. A smaller list may simplify auditing, but the Surge rule-set engine already indexes large domain sets, so do **not** claim demonstrated speed, memory, or battery improvements without a device benchmark (official rule-set documentation: https://manual.nssurge.com/rules/ruleset.html).
+
+**Next gate:** review the four native DOMAIN-KEYWORD predicates, verify Peter Lowe list redistribution permission, add a deterministic exact-host conversion with source acknowledgement, run Surge-compatible parsing and known-good tests, then do a reversible A/B on the spare iPhone 15 Pro only. Keep main iPhone Air on its existing production rules.
