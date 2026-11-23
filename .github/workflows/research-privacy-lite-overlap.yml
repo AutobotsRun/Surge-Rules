@@ -1,0 +1,33 @@
+name: Audit China, Privacy, Hijacking and Lite (read-only)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audit_privacy_lite_overlap.py"
+      - "tests/test_privacy_lite_overlap_audit.py"
+      - ".github/workflows/research-privacy-lite-overlap.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Test static rule semantics with offline fixtures
+        run: python3 -m unittest discover -s tests -p 'test_privacy_lite_overlap_audit.py' -v
+      - name: Read pinned public sources and compute counts only
+        run: python3 scripts/audit_privacy_lite_overlap.py > /tmp/advertising-lite-privacy-overlap.json
+      - name: Summarize research metadata
+        run: cat /tmp/advertising-lite-privacy-overlap.json
+      - name: Upload counts and review flags only (never upstream lists)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: surge-privacy-lite-overlap-readonly
+          path: /tmp/advertising-lite-privacy-overlap.json
+          retention-days: 14

@@ -1,0 +1,57 @@
+name: Review Hijacking Adobe-only removal (read-only test)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/build_hijacking_curated_test.py"
+      - "tests/test_hijacking_curated_test.py"
+      - ".github/workflows/research-hijacking-curated.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate independent offline tests
+        run: |
+          python3 -m py_compile scripts/build_hijacking_curated_test.py
+          python3 -m unittest discover -s tests -p 'test_hijacking_curated_test.py' -v
+      - name: Build test-only source-pinned candidate, no live changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/build_hijacking_curated_test.py > /tmp/hijacking-candidate-summary.json
+      - name: Verify exact one-domain deletion and IP preservation
+        run: |
+          python3 - <<'PY'
+          import json, hashlib
+          from pathlib import Path
+          root=Path('/tmp/hijacking-curated-test-only')
+          raw=(root/'Hijacking-Curated-TEST.list').read_bytes()
+          active=[x.strip() for x in raw.splitlines()
+                  if x.strip() and not x.startswith(b'#')]
+          data=json.loads((root/'manifest.json').read_text())
+          assert len(active)==227
+          assert b'DOMAIN,geo2.adobe.com' not in active
+          assert b'IP-CIDR,114.119.160.0/21,no-resolve' in active
+          assert b'IP-CIDR,222.186.61.96/31,no-resolve' in active
+          assert data['original_rules']==228
+          assert data['curated_rules']==227
+          assert data['candidate_sha256']==hashlib.sha256(raw).hexdigest()
+          assert (root/'LICENSE.GPL-2.0.txt').stat().st_size>10000
+          print('Hijacking only-one-entry test snapshot OK. Not deployed.')
+          PY
+      - name: Upload review artifact on Draft PR only
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hijacking-curated-test-only-not-deployed
+          path: /tmp/hijacking-curated-test-only/
+          retention-days: 7
