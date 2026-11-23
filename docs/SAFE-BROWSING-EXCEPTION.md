@@ -135,3 +135,27 @@ https://manual.nssurge.com/rules/ruleset.html
 - Any failure: restore the original Privacy and retain all other rules unchanged.
 
 **Current status:** the original Privacy works and the candidate is **not deployed**. No loss of protection remains from the attempted test. No successful live curated-Privacy test is claimed.
+
+
+## Current protected preload state (awaiting main-app index)
+
+We staged the already-published pinned experimental Privacy RULE-SET as **first** Privacy rule for iPhone16,1, while leaving original Privacy_All **unconditionally active as its immediate fallback on all devices**. This explicitly addresses the failed-index window discovered earlier, with no need for the user to weaken tracking protection.
+
+The relevant current profile stanza is:
+
+    # Privacy
+    # SPARE-IP15PRO-PRIVACY-PRELOAD: curated first; keep ORIGINAL as always-active fallback until index verified.
+    #!REQUIREMENT DEVICE_MODEL=='iPhone16,1' RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/ed558890190af404456b7ca5d68ac119cd087566/experiments/privacy-curated/Privacy-Curated-TEST.list,REJECT
+    RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Privacy/Privacy_All.list,REJECT
+
+Verified real Surge matches after staging:
+- Candidate: listed ready=true, but error=No index. **Not yet effective**.
+- Original Privacy_All: listed ready=true. analytics.strava.com and safebrowsing.urlsec.qq.com → original Privacy REJECT.
+- Prior priority Safe Browsing Google US exception and Lite ad REJECT still active.
+- The main iPhone Air and other model devices still use the original Privacy_All and do not activate candidate because of model condition.
+
+**Current user step:** open the Surge main iOS app on the spare iPhone 15 Pro so the downloaded external RULE-SET can complete its on-disk indexing. There is no need to turn off VPN, browse unsafe websites, reset configurations or modify the main iPhone.
+
+**Next assistant verification once user has opened the main app:** check resource No index has disappeared and analytics.strava.com is REJECT by Privacy-Curated-TEST.list itself rather than the old fallback; then explicitly decide whether to retire the fallback on spare only and remove the redundant Google exception. Do not treat ready=true without matching proof as success.
+
+**Do not assume the user has opened Surge or that indexing has completed.**
