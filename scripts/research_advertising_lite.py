@@ -103,8 +103,12 @@ def analyze(name, data, mode, refs):
         "unsupported_or_exception_lines": sum(skipped.values()),
         "matched_by_existing_rule_sets": overlap,
         "not_matched_by_current_advertising": len(domains) - overlap["current_advertising"],
-        "known_good_matched_by_candidate_suffix": {
-            host: covered(set(), domains, host) for host in KNOWN_GOOD
+        "not_matched_by_any_existing_rule_set": sum(
+            not any(covered(*refs[source], host) for source in refs) for host in domains
+        ),
+        "known_good_matched_by_candidate": {
+            host: (covered(set(), domains, host) if mode == "adblock" else host in domains)
+            for host in KNOWN_GOOD
         },
     }
 
