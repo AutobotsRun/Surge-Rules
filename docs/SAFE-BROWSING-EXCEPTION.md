@@ -96,3 +96,42 @@ After Lite observation, use a curated Privacy variant with exactly one deletion 
 5. If any regression appears, revert the single Privacy switch and restore the original one-line priority exception.
 
 No curated Privacy source is deployed. The current spare-device Safe Browsing exception remains active.
+
+## Attempted Privacy test and verified rollback (2026-11-23)
+
+The user authorized a staged Privacy trial. A fixed, audited GPL-2.0 experiment snapshot was published on a separate experimental branch, never on main:
+- Branch: experiment/privacy-curated-20261123
+- Pinned commit: ed558890190af404456b7ca5d68ac119cd087566
+- Path: experiments/privacy-curated/Privacy-Curated-TEST.list
+- Candidate blob SHA: 71485074a103d11998a75432ad7566833a97657f
+- Diff: exactly one deleted Privacy DOMAIN rule, 39,936 to 39,935.
+- Independent legal attribution: source GPL license exists at sources/blackmatrix7/LICENSE, with branch-level THIRD_PARTY_NOTICES.md and manifest.json.
+- A HEAD probe to the small manifest returned HTTP 200; a probe to the large 1.44 MB list failed at the probe's response-content-size limit, unrelated to rule syntax.
+
+### Trial and safety
+
+1. Added a model-conditional RULE-SET in the existing Privacy location, selecting only iPhone16,1, while the original Privacy was conditionally retained for all other device models. The earlier Google Safe Browsing explicit exception remained.
+2. The new resource initially showed a missing-file status; the Surge refresh action reported success.
+3. The new resource then showed ready=true **but also error=No index**. Rule matching for analytics.strava.com and the Tencent Safe Browsing service fell through to China, confirming the new Privacy index was NOT effective. We did not infer success from ready alone.
+4. **Immediately rolled back the entire test Privacy stanza** to the exact previous original Privacy line. The section revision returned to its original value, with all other Rule content and the Live Advertising Lite preserved.
+5. After rollback, original Privacy appeared ready=true; analytics.strava.com and safebrowsing.urlsec.qq.com again matched the original Privacy REJECT. The exact Google Safe Browsing exception still routed US and ad.qq.com still matched Lite REJECT. No production data or other devices were changed.
+
+The persistent Surge log explicitly states:
+
+    Index not found: .../Privacy-Curated-TEST.list. Please open the main app to complete indexing.
+
+Surge official rule-set documentation notes that external lists with >1000 domain entries use a disk-backed index:
+https://manual.nssurge.com/rules/ruleset.html
+
+**This is an index-creation prerequisite, not proof of invalid test file content.** The third-party resource is not yet usable from the Surge background extension alone.
+
+### Next safe test when the user is able to open the spare iPhone's Surge main app
+
+- Keep original Privacy enabled as fallback **on the spare too**, instead of removing it until the curated candidate's index is verified. Place the curated test before the original in ordered rules.
+- Leave the existing Google Safe Browsing exact exception unchanged during index creation.
+- Have the user open Surge on the spare so main-app indexing can finish.
+- Only when match_rule shows the new candidate actively blocking normal tracking domains and there is no No index error, remove the original Privacy for the spare (while keeping it on other models).
+- After further verification remove the now redundant Google Safe Browsing exact exception and confirm its normal route through Google.list (which already has DOMAIN-SUFFIX,googleapis.com).
+- Any failure: restore the original Privacy and retain all other rules unchanged.
+
+**Current status:** the original Privacy works and the candidate is **not deployed**. No loss of protection remains from the attempted test. No successful live curated-Privacy test is claimed.
