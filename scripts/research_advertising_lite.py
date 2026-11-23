@@ -33,6 +33,20 @@ ADBLOCK = re.compile(r"\|\|([a-z0-9-]+(?:\.[a-z0-9-]+)+)\^")
 KNOWN_GOOD = ["apd-pcdnwxlogin.teg.tencent-cloud.net",
               "apd-pcdnwxstat.teg.tencent-cloud.net",
               "dns.weixin.qq.com.cn", "smartpay-admin.fugetech.com"]
+# Possible functional endpoints from the public Only.Ads source, NOT proven
+# to be false positives. Review individually before any device trial.
+REVIEW_NATIVE_HOSTS = [
+    "wxa.wxs.qq.com", "wximg.wxs.qq.com", "wxsmw.wxs.qq.com",
+    "wxaintpcos.wxqcloud.qq.com.cn",
+    "hybrid.miniapp.taobao.com", "mini-prog-drm.vodplayvideo.net",
+    "pay.sboot.cn", "sdkconfig.video.qq.com",
+]
+# A very small guard against dangerously broad suffix conversion. This is NOT
+# a complete Public Suffix List validator.
+DANGEROUS_SUFFIXES = {
+    "co.uk", "com.cn", "net.cn", "org.cn", "co.jp", "com.au",
+    "co.nz", "com.br", "co.kr", "com.hk", "com.tw", "gov.cn",
+}
 
 
 def fetch(name, url):
@@ -96,33 +110,46 @@ def candidate_rules(data, mode):
 
 
 def audit_native_ip_rules(data):
-    """Counts structural IP risks; does not publish third-party IP entries."""
+    """Structural-only IP audit; never print or publish IP rule contents."""
     summary = {"ipv4": 0, "ipv6": 0, "non_global": 0,
                "broad_ipv4_under_24": 0, "broad_ipv6_under_64": 0,
-               "invalid": 0}
+               "single_ipv4_32": 0, "single_ipv6_128": 0,
+               "with_no_resolve": 0, "without_no_resolve": 0, "invalid": 0}
     for item in data.decode("utf-8-sig").splitlines():
         item = item.strip()
         kind, _, remainder = item.partition(",")
         if kind not in {"IP-CIDR", "IP-CIDR6"}:
             continue
+        fields = [part.strip() for part in remainder.split(",")]
         try:
-            network = ipaddress.ip_network(remainder.split(",", 1)[0], strict=False)
+            network = ipaddress.ip_network(fields[0], strict=False)
             if (kind == "IP-CIDR") != (network.version == 4):
                 raise ValueError("family mismatch")
+            if any(flag not in {"no-resolve"} for flag in fields[1:]):
+                raise ValueError("unexpected IP flag")
         except ValueError:
             summary["invalid"] += 1
             continue
+        if "no-resolve" in fields[1:]:
+            summary["with_no_resolve"] += 1
+        else:
+            summary["without_no_resolve"] += 1
         if network.version == 4:
             summary["ipv4"] += 1
             if network.prefixlen < 24:
                 summary["broad_ipv4_under_24"] += 1
+            if network.prefixlen == 32:
+                summary["single_ipv4_32"] += 1
         else:
             summary["ipv6"] += 1
             if network.prefixlen < 64:
                 summary["broad_ipv6_under_64"] += 1
+            if network.prefixlen == 128:
+                summary["single_ipv6_128"] += 1
         if not network.is_global:
             summary["non_global"] += 1
     return summary
+
 
 
 def analyze(name, data, mode, refs):
@@ -192,32 +219,58 @@ def analyze(name, data, mode, refs):
 
 
 
-def study_small_pair(native_ads, hosts_ads_only):
-    """Static, exact-domain merge estimate; never emits a downloadable list."""
+def study_small_pair(native_ads, hosts_ads_only, host_semantics="exact"):
+    """Model two alternatives, but NEVER emit a subscribed or downloadable list."""
+    if host_semantics not in {"exact", "suffix"}:
+        raise ValueError("unknown hosts semantics")
     exact, suffix, types = surge_rules(native_ads)
     hosts, unsupported = candidate_rules(hosts_ads_only, "hosts")
-    if unsupported or len(hosts) < 1000:
-        raise ValueError("unexpected ads-only hosts format")
-    extra_hosts = {host for host in hosts if not covered(exact, suffix, host)}
-    merged_exact = exact | extra_hosts
-    keywords = {
+    if unsupported or not 1000 <= len(hosts) <= 10000:
+        raise ValueError("unexpected ads-only hosts format or count")
+    if hosts & DANGEROUS_SUFFIXES:
+        raise ValueError("potential public suffix in hosts source")
+    # Exact-hosts dedup includes native exact coverage; suffix-hosts dedup
+    # requires existing suffix coverage, not merely native DOMAIN coverage.
+    already_covered = {
+        host for host in hosts if (
+            covered(exact, suffix, host) if host_semantics == "exact"
+            else covered(set(), suffix, host)
+        )
+    }
+    extra_hosts = hosts - already_covered
+    merged_exact = exact | (extra_hosts if host_semantics == "exact" else set())
+    merged_suffix = suffix | (extra_hosts if host_semantics == "suffix" else set())
+    keywords = sorted({
         line.split(",", 1)[1].split(",", 1)[0].lower()
         for line in native_ads.decode("utf-8-sig").splitlines()
         if line.startswith("DOMAIN-KEYWORD,")
+    })
+    known_good = {
+        host: covered(merged_exact, merged_suffix, host)
+        or any(token in host for token in keywords)
+        for host in KNOWN_GOOD
     }
+    # Research can compare risky sources, but the proposed paired candidate
+    # itself must fail closed if it starts matching a locally verified service.
+    if any(known_good.values()):
+        raise ValueError("proposed paired candidate collides with known-good hosts")
+    native_sensitive = sorted(
+        host for host in REVIEW_NATIVE_HOSTS
+        if covered(exact, suffix, host) or any(token in host for token in keywords)
+    )
     return {
-        "method": "static native RULE-SET + conservative exact-hosts deduplication",
+        "method": "static native RULE-SET + Peter Lowe HOSTS semantic alternative",
+        "host_semantics": host_semantics,
         "native_rules_total": sum(types.values()),
         "hosts_ads_only_unique": len(hosts),
-        "hosts_already_covered_by_native_exact_or_suffix": len(hosts) - len(extra_hosts),
-        "hosts_added_as_exact_domain_rules": len(extra_hosts),
+        "hosts_already_covered_by_native_rules": len(already_covered),
+        "hosts_added_as_" + host_semantics + "_domain_rules": len(extra_hosts),
         "estimated_merged_native_rule_count": sum(types.values()) + len(extra_hosts),
-        "known_good_matched_by_domain_or_keyword": {
-            host: covered(merged_exact, suffix, host) or
-                  any(token in host for token in keywords)
-            for host in KNOWN_GOOD
-        },
-        "limits": "Not a published list or measured effectiveness. IP-CIDR is not resolved against known-good domains; keyword, CNAME, updates, and live traffic need further checking."
+        "native_keyword_predicates": keywords,
+        "native_potential_functional_hosts_for_review": native_sensitive,
+        "native_ip_risk_summary": audit_native_ip_rules(native_ads),
+        "known_good_matched_by_domain_or_keyword": known_good,
+        "limits": "Static exact-vs-suffix models only. Suffix conversion expands matching to ALL subdomains, and exact conversion may underblock compared with upstream intent. IP-to-host DNS, live requests, CNAME, actual ad misses and false positives are not tested."
     }
 
 
@@ -243,6 +296,9 @@ def main():
              ("peter_lowe_ads_only", "hosts"))
         ],
         "proposed_awa_plus_peter_ads_only": study_small_pair(blobs["awavenue_surge_only_ads"], blobs["peter_lowe_ads_only"]),
+        "proposed_awa_plus_peter_ads_only_suffix_simulation": study_small_pair(
+            blobs["awavenue_surge_only_ads"], blobs["peter_lowe_ads_only"], host_semantics="suffix"),
+
         "limits": "Simple exact domains and suffixes only. For native Surge false-positive checks also test DOMAIN-KEYWORD; IP/regex/AND not simulated. Ignores modifiers, exceptions, precedence, DNS/CNAME, traffic distribution. No third-party content is redistributed.",
     }
     path = Path("/tmp/advertising-lite-comparison.json")
