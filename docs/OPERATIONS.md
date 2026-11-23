@@ -15,7 +15,7 @@
 - `upstreams/state.json`：上游内容的 SHA-256、文件字节数和有效行数；由审计任务生成，**尚不存在时代表未建立基线**。
 - `upstream/`：可选的上游规则快照；只有明确完成许可审查、人工把 `mode` 设为 `mirror` 且 `redistribution_approved=true` 才能产生文件。此时还必须检查并保留版权、许可证与原作者来源。
 - `.github/workflows/validate.yml`：PR/主分支离线静态检查。
-- `.github/workflows/audit-upstreams.yml`：每日北京时间 11:17（UTC 03:17）或手动执行；抓取、校验，然后创建**草稿 PR**，不合并。
+- `.github/workflows/audit-upstreams.yml`：每日北京时间 11:17（UTC 03:17）或在 `main` 手动执行；抓取、校验，然后创建**草稿 PR**，不合并。手动触发其他分支会被 job 条件拒绝。
 
 ## 首次启用及日常审核
 
