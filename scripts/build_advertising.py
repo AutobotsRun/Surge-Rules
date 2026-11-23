@@ -85,7 +85,7 @@ def transform(raw, exclusions, strict=True, reviewed_complex=None):
         raise ValueError("Expected EXACT exclusion missing or duplicated. STOP; inspect upstream changes.")
     complex_rules = [line.strip() for line in cleaned
                      if line.strip() and line.strip().split(",", 1)[0] in COMPLEX_TYPES]
-    digest = hashlib.sha256("\\n".join(complex_rules).encode("utf-8")).hexdigest()
+    digest = hashlib.sha256("\n".join(complex_rules).encode("utf-8")).hexdigest()
     if complex_rules:
         if (not reviewed_complex
                 or reviewed_complex.get("sha256") != digest
