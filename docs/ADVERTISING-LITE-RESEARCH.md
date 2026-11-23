@@ -265,3 +265,16 @@ Remaining cautions:
 3. Quarantining exact hostnames and checking four locally verified services cannot guarantee no other breakage. The source includes other Tencent/WeChat, payment, CDN and app-resource names that still warrant app-by-app validation.
 4. Licensing/source-notice work and Surge parsing on real iOS remain mandatory before publishing. The private iPhone 15 Pro A/B must replace, not stack, the active Advertising subscription; save the original URL for immediate rollback. The primary iPhone Air remains untouched.
 5. **No \`rules/Advertising-Lite.list\` exists; nothing has been merged; no devices, AdGuard Home filters, or active subscription URLs were modified.**
+
+
+## Seventh research round: real-device WeChat baseline observation (2026-11-23)
+
+This is a **production full Advertising baseline**, **NOT a Lite test**. Only an anonymous, aggregate interpretation is recorded here; no raw Surge network requests, private request URLs, device identifiers, payment records, or captured bodies are published.
+
+- The active Surge configuration still uses the pinned full Advertising RULE-SET. The user opened their previously problematic WeChat mini-program flow for a baseline check. Actual user-visible functional success must be separately confirmed; absence of a connection error does not prove payment success.
+- Surge had **six active Direct connections** to the previously approved payment-related hostname, none carrying a reported connection failure; at least some had transferred data in both directions.
+- Observed related WeChat resource domains routed Direct without reported errors. A WeChat gateway-report host instead followed a Hong Kong proxy via FINAL; it likewise had non-failing connection observations. This different routing may be worth separately studying but does not itself prove malfunction.
+- The two exact-domain overrides for the known payment administrator and WeChat DNS service were **runtime temporary rules** (not persistent profile rules). Their working state cannot be assumed to survive stopping the Surge engine, and the eventual rollback/persistence plan must distinguish these overrides from independently maintained AdGuard Home allowlist entries.
+- The local DNS resolver/AdGuard Home independently returned 0.0.0.0 for several publicly listed Tencent/WeChat resource hostnames. Replacing a Surge-only Advertising RULE-SET would not necessarily unblock requests already sinkholed upstream. A/B methodology must keep resolver filtering constant and isolate the component under test.
+- This observation supports retaining the exact known-good exception tests and quarantining ambiguous mini-program endpoints in the Lite study; it does not demonstrate Lite compatibility, reduced breakage, advertising coverage, or faster matching.
+- **No payment initiated by the assistant, no Surge/AdGuard modifications, no public request dump.** Keep PR in draft research state until explicit real-device Lite validation is possible.
