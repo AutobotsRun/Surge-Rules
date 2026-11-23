@@ -26,7 +26,7 @@ All three rule sets are from blackmatrix7/ios_rule_script under its GPL-2.0 proj
 
 The `UPDATED` field denotes the upstream generated list's header date, **not** evidence of a repository outage or a current automatic update failure.
 
-For China and Hijacking, complete contents were fetched via the GitHub connector, and parser counts matched their headers. The Privacy_All listing is too large for that connector's content interface (it returned an empty content payload), so its **full 39,936-rule content has not yet been independently diffed against Lite**; the count is from its upstream README/header, supported by effective active-rule inspection below. Do not claim an overlap percentage or an optimization advantage from uncomputed data.
+For China and Hijacking, complete contents were fetched via the GitHub connector, and parser counts matched their headers. In the first round, the oversized Privacy_All file could not be read through GitHub's contents API. In the **second round it was successfully fetched in full through GitHub's Git Blob API**, and all four pinned public sources were compared by a tested offline Python script. The observations below under 'Second round' supersede the initial incomplete state. Static rule entailment is not a measurement of traffic volume or blocking effectiveness.
 
 Upstream refs:
 - https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Surge/China/README.md
@@ -83,3 +83,74 @@ Official technical references:
 - https://kb.nssurge.com/surge-knowledge-base/zh/technotes/user-agent
 
 This is an analytical report. It includes no private profile text, proxy credentials, private request logs, or client identifiers.
+
+
+## Second round: complete source-pinned overlap calculation (2026-11-23)
+
+**Reproducibility:** A separate 4-source reader was added at scripts/audit_privacy_lite_overlap.py, with tests/test_privacy_lite_overlap_audit.py and read-only workflow .github/workflows/research-privacy-lite-overlap.yml.
+
+- Workflow success: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45200996871
+- General repo validation success: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45200996232
+- **7/7 offline tests** passed; the four sources' actual Git-blob SHA-1 objects and expected counts were checked before comparison.
+- CI artifact: surge-privacy-lite-overlap-readonly (aggregate JSON only; no copied third-party blocklists, private network logs or profile contents).
+
+### Four audited source sizes
+
+| List | Rules | Relevant types |
+|---|---:|---|
+| Lite pinned experimental file | 2,890 | 2,875 DOMAIN, 11 DOMAIN-SUFFIX, 4 DOMAIN-KEYWORD |
+| Privacy_All | 39,936 | 19 DOMAIN, 39,897 DOMAIN-SUFFIX, 9 DOMAIN-KEYWORD, 11 IP-CIDR |
+| Hijacking | 228 | 1 DOMAIN, 185 DOMAIN-SUFFIX, 42 IP-CIDR |
+| China_All | 3,752 | 17 DOMAIN, 3,674 DOMAIN-SUFFIX, 9 DOMAIN-KEYWORD, 17 IPv4, 4 IPv6, 31 USER-AGENT |
+
+### Predicate entailment results (NOT request-level overlap)
+
+Here **fully covered** means *every hostname* that matches the subject DOMAIN, DOMAIN-SUFFIX or DOMAIN-KEYWORD predicate must also match at least one reference predicate. This is stricter than the two lists sharing some hosts. To avoid false conclusions, IP-CIDR and USER-AGENT comparisons, actual request frequencies, DNS pre-matching and policy evaluation order are **excluded** from the overlap percentages.
+
+| Subject rules | Already fully covered by | Count | How |
+|---|---|---:|---|
+| Lite (2,890) | Privacy | **86 / 2,890 = 2.98%** | 1 exact DOMAIN, 83 covered by Privacy suffixes, 2 covered by Privacy keywords |
+| Privacy (39,936) | Lite | **1 / 39,936 = 0.0025%** | one exact DOMAIN: js.users.51.la |
+| Lite | Hijacking | **2** | 2 Lite exact domains covered by Hijacking suffix predicates |
+| Hijacking | Lite + Privacy together | **0** | Domain predicate containment only; no evaluated IP containment |
+| China_All (3,752) | Privacy | **7** | 5 covered by suffixes, 2 covered by Privacy keywords |
+
+The only **textually identical same-type same-value** Lite/Privacy rule is DOMAIN,js.users.51.la. The 86 counted above include the more general Privacy suffixes and keywords, not 86 identical lines. A different weighting by actual traffic could give completely different percentages.
+
+The seven China entries fully covered by Privacy are:
+- DOMAIN,analytics.strava.com
+- DOMAIN-SUFFIX,cmpassport.com
+- DOMAIN-SUFFIX,giocdn.com
+- DOMAIN-SUFFIX,growingio.com
+- DOMAIN-SUFFIX,irs01.com
+- DOMAIN-SUFFIX,rtbasia.com
+- DOMAIN-SUFFIX,volceapplog.com
+
+Because Privacy REJECT appears before China Direct in the user's rule order, these domain predicates are effectively shadowed, but precise runtime behavior still depends on other earlier rules and DNS.
+
+### Potential security-function false positive: Safe Browsing
+
+The complete Privacy file includes exact DOMAIN rules for:
+- safebrowsing.googleapis.com
+- safebrowsing.urlsec.qq.com
+
+**Verified on actual spare iPhone 15 Pro:** safebrowsing.googleapis.com matches Privacy_All REJECT, independent of the Lite rule. Google's official API service documentation confirms that this is a real Safe Browsing service used by clients to check malicious/phishing URLs:
+https://developers.google.com/safe-browsing/reference/rest
+
+This raises a legitimate **security-function compatibility concern**, not proof that any particular installed browser lacks protection. Implementations may use different endpoints, local databases or platform services. The Tencent URL-security hostname is also a manual review candidate; do not assert it is used by a specific device until corroborated.
+
+The original Hijacking list additionally includes DOMAIN,geo2.adobe.com, and 42 IP-CIDR rules (40 /32, one /31 and one 114.119.160.0/21). The /21 can match a range of 2,048 IP addresses. This is not automatically unsafe, but its ownership and current threat justification deserve more review given the 2025-06 upstream generated date.
+
+### Known-good domains and priority
+
+The four user-confirmed functional hostnames:
+- apd-pcdnwxlogin.teg.tencent-cloud.net
+- apd-pcdnwxstat.teg.tencent-cloud.net
+- dns.weixin.qq.com.cn
+- smartpay-admin.fugetech.com
+
+are **not statically matched** by any of the audited Lite, Privacy or Hijacking domain predicates. This is a domain-rule audit, not a guarantee against AdGuard Home independent DNS filtering or IP-range rules.
+
+**Current recommendation (no device change):** Keep Lite + Privacy + Hijacking separated for now. Mark Safe Browsing endpoints for manual functional verification before any change; prioritize the unusual 114.119.160.0/21 IP range and Adobe host for Hijacking evidence review. China keyword microsoft remains overbroad enough to warrant separate route-specific testing. Source-pinned snapshots are preferable to unknown moving master revisions once future changes are approved.
+
+At the time of writing this report, **zero** profile lines, active Surge modules, AdGuard Home allowlists, default branch rules, and subscribed services were changed by this research round. Both Lite and this independent research PR remain in their previously stated states.
