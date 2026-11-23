@@ -64,3 +64,35 @@ https://manual.nssurge.com/profile/requirement.html
 Research-only context: https://github.com/AutobotsRun/Surge-Rules/pull/13
 
 This document records a user-approved, reversible change already applied through Surge MCP. The PR itself **does not deploy or apply** device edits.
+
+
+## Follow-up: why Google service catalog alone is insufficient (2026-11-23)
+
+User suggested placing the exact Safe Browsing exception inside the self-maintained Google rule collection. This is conceptually correct but redundant at source:
+
+- The existing 703-rule managed Google list already includes DOMAIN-SUFFIX,googleapis.com, which covers the official Safe Browsing API host.
+- The active Surge profile evaluates Privacy_All REJECT before Google.list US. Surge matches the first applicable rule, so moving the Safe Browsing entry into Google.list alone would not restore access.
+- Moving the whole Google list before Privacy is potentially unsafe: comparing the 703-rule Google list with the pinned 39,936-rule Privacy finds seven Google suffix root domains affected by Privacy matching, including Google Analytics and Google Tag Manager. Reordering may bypass deliberate tracking suppression.
+- The existing spare-iPhone priority exception already uses the same US policy as normal Google services. No immediate device change is needed.
+
+### Staged future clean architecture (not yet deployed)
+
+After Lite observation, use a curated Privacy variant with exactly one deletion and allow the existing later Google list to route this host. Remove the priority exception at the same time; it is no longer needed once Privacy does not block that host. Do not add a redundant exact host to Google.list.
+
+- Generator: scripts/build_privacy_curated_test.py, pinned upstream Git blob a75df944a7a0fcae26f762059c0f7fd72f42c420.
+- Scope: original 39,936 Privacy predicates minus DOMAIN,safebrowsing.googleapis.com = 39,935; all other rule lines and upstream comments remain byte-identical.
+- Attribution: GPL-2.0, existing full license file and modification notice in generated ZIP.
+- Validation: 8 of 8 offline tests passed and a public source verification plus single-delta comparison succeeded in CI: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45206819953 .
+- Repo validation also succeeded: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45206819916 .
+- TEST-ONLY 7-day workflow artifact: privacy-curated-test-only-not-deployed (Privacy-Curated-TEST.list, manifest.json, LICENSE.GPL-2.0.txt, THIRD_PARTY_NOTICES.md).
+- Permissions of research workflow: contents read only. No normal rules files were replaced and there was no deploy.
+
+### Planned switch checks (after current Lite testing)
+
+1. Back up the iCloud-synchronized profile. Verify the device is the spare iPhone16,1; preserve the old Privacy list for all other device models.
+2. Supply the curated candidate using a pinned immutable test URL verified on-device, and keep it in the existing Privacy position. Do not activate the old and new Privacy REJECT lists together.
+3. Only after the new resource is ready, remove the now-redundant earlier Safe Browsing exception on the spare. Confirm Google's existing googleapis.com route selects US.
+4. Retest Lite ads, WeChat payment Direct exceptions, remaining Privacy tracking and the Tencent safety domain; verify effective per-host matches and ensure original Privacy remains on other devices.
+5. If any regression appears, revert the single Privacy switch and restore the original one-line priority exception.
+
+No curated Privacy source is deployed. The current spare-device Safe Browsing exception remains active.
