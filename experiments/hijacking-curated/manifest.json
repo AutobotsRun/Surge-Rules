@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "status": "experimental, unmerged, not production",
+  "original_upstream": "blackmatrix7/ios_rule_script rule/Surge/Hijacking/Hijacking.list",
+  "source_blob_sha": "0ffb798f0ce5f098fd3e7dc889fbbca94b9bdd5d",
+  "candidate_blob_sha": "f1b234f38aaf6b4e0ff9eb97c941336444598da1",
+  "counts": {
+    "original": 228,
+    "curated": 227,
+    "removed": [
+      "DOMAIN,geo2.adobe.com"
+    ]
+  },
+  "license": "GPL-2.0",
+  "attribution": "sources/blackmatrix7/LICENSE",
+  "caveat": "AdGuard Home independently sinkholes geo2.adobe.com to 0.0.0.0; changing Surge alone does not restore reachability."
+}
