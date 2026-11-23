@@ -282,3 +282,39 @@ On the spare iPhone 15 Pro, read-only Surge rule matching returned the following
 This verifies actual Surge policy matching, but **does not establish whether real applications attempted to connect to those IPs**. The recent buffered request search for a hostname containing "safebrowsing" returned zero matches at inspection time; the buffer is limited and cannot prove no app ever uses those hosts.
 
 No network packet was sent to any of the six IP targets; match_rule evaluates the active rule tree.
+
+
+## Fourth round: browser Safe Browsing compatibility triage (2026-11-23)
+
+**Scope:** No changes to Surge, iCloud profile, DNS, AdGuard Home or browser settings. Passive inspection and Surge rule evaluation only; PR remains Draft. The spare iPhone 15 Pro still uses home Wi-Fi and DNS 10.0.0.6.
+
+### Public references
+
+- Google identifies safebrowsing.googleapis.com as a real Safe Browsing API endpoint for URL/hash checks: https://developers.google.com/safe-browsing/reference/rest
+- The separately documented Google OHTTP Safe Browsing Gateway API uses safebrowsingohttpgateway.googleapis.com: https://developers.google.com/safe-browsing/ohttp/reference . This does NOT prove that any given Chrome build calls the same host.
+- Google documents privacy-preserving real-time checks for Chrome Standard Safe Browsing on iOS, mediated by a privacy server: https://security.googleblog.com/2024/03/blog-post.html and https://support.google.com/chrome/answer/13844634?co=GENIE.Platform%3DiOS&hl=en
+- Safari has a separate Fraudulent Website Warning feature; its existence does not establish which back-end API host it uses on a given iPhone: https://support.apple.com/guide/iphone/browse-the-web-privately-iphb01fc3c85/27/ios
+
+### Surge and DNS results
+
+| Hostname | Verified Surge rule | DNS from 10.0.0.6 | Observed application request? |
+|---|---|---|---|
+| safebrowsing.googleapis.com | Privacy_All exact REJECT | 198.18.0.40 (fake-IP class; not 0.0.0.0) | Not in currently visible request buffer |
+| safebrowsingohttpgateway.googleapis.com | Separately maintained Google service rule → US proxy | 198.18.12.35 (not sinkholed) | Not in currently visible request buffer |
+| safebrowsing.urlsec.qq.com | Privacy_All exact REJECT | 0.0.0.0 (separate AdGuard Home DNS sinkhole) | Not in currently visible request buffer |
+
+The fake-IP values are not the public remote server IPs and do not prove request success. The 0.0.0.0 result indicates network DNS blocking.
+
+The Surge buffer is bounded (50 recent requests plus active connections). Case-insensitive filtering for safebrowsing, safebrowse, safebrowsingohttp, googleapis.com and urlsec.qq.com returned zero observed requests. The available Surge file log also contained no such hostname lines (288 retained lines at inspection). These are small and incomplete observation windows, NOT proof that installed browsers never use the services. Cached security decisions, different app modes, or privacy relays may also reduce visibility.
+
+### Recommended non-destructive follow-up
+
+1. Keep Lite, Privacy and Hijacking active; do not add a speculative broad allowlist.
+2. If user wishes to validate Chrome iOS on the spare, first READ its Safe Browsing protection level in Chrome Settings, Privacy and security. Do not switch off protections.
+3. Compare a controlled browser session on that device against Surge request logs. Browsing ordinary sites may not generate a visible safe-browsing API call; zero calls is not a successful functional test.
+4. For functional warnings, use only a Google-owned Safe Browsing testing resource rather than real malicious websites, and NEVER bypass warning screens. This must be performed deliberately by the user if desired; no such test has occurred.
+5. Only if specific functionality is demonstrably affected should an exact-host, spare-only temporary exception be considered; the Tencent host also needs separate AdGuard Home DNS analysis.
+
+The independent pinned-source research script adds a security_endpoint_review classification with three hostnames and tests; this is NOT a production allowance or a service-reachability test.
+
+**Conclusion:** Privacy may overblock an official Google security API, but there is still no evidence of lost Chrome or Safari protection. The OHTTP API hostname is not blocked by these three public rule sets and is eligible for the existing Google policy. No device configuration has been changed.
