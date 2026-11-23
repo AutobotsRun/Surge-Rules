@@ -1,0 +1,53 @@
+name: Audit upstream Surge rules
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # Daily UTC; PR only, never deploy.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: surge-upstream-audit
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout reviewed baseline
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: true
+      - name: Fetch and validate all sources
+        run: python3 scripts/audit_upstreams.py --sync --report "$RUNNER_TEMP/surge-upstreams-report.md"
+      - name: Propose changes in a draft PR (no merge or release)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "All monitored rules unchanged."
+            exit 0
+          fi
+          existing="$(gh pr list --state open --base main --limit 100 --json headRefName --jq '.[].headRefName' | grep '^automation/upstream-audit-' || true)"
+          if [ -n "$existing" ]; then
+            echo "An upstream audit PR is already open: $existing"
+            echo "No branch was rewritten. Review/merge/close the pending PR first."
+            exit 0
+          fi
+          branch="automation/upstream-audit-$(date -u +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A
+          git commit -m "chore: propose reviewed upstream rule fingerprints"
+          git push origin "$branch"
+          gh pr create \
+            --base main --head "$branch" --draft \
+            --title "chore: review changed upstream Surge rules" \
+            --body-file "$RUNNER_TEMP/surge-upstreams-report.md"
