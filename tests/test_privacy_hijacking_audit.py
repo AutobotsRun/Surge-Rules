@@ -75,6 +75,24 @@ class RuleOverlapTests(unittest.TestCase):
         self.assertFalse(result["safebrowsingohttpgateway.googleapis.com"]["lite"])
         self.assertFalse(result["safebrowsingohttpgateway.googleapis.com"]["hijacking"])
 
+    def test_china_semantic_redundancy_is_not_broad_keyword_removal(self):
+        book = audit.parse_rules(
+            b"DOMAIN-SUFFIX,cn\n"
+            b"DOMAIN-SUFFIX,example.cn\n"
+            b"DOMAIN-KEYWORD,microsoft\n"
+            b"DOMAIN,download.microsoft.com\n"
+            b"IP-CIDR,10.0.0.0/16\n"
+            b"IP-CIDR,10.0.1.0/24\n"
+        )
+        result = audit.china_redundancy(book)
+        self.assertEqual(result["total_fully_covered"], 3)
+        self.assertEqual(result["by_rule_type"]["DOMAIN-SUFFIX"], 1)
+        self.assertEqual(result["by_rule_type"]["DOMAIN"], 1)
+        self.assertEqual(result["by_rule_type"]["IP-CIDR"], 1)
+        # The covering microsoft keyword itself is not redundant and must
+        # remain unless a separately reviewed routing change is intended.
+        self.assertEqual(len(book["DOMAIN-KEYWORD"]), 1)
+
     def test_china_suffix_cover_is_not_reject_equivalence(self):
         china = audit.parse_rules(b"DOMAIN-SUFFIX,cn\n")
         hijack = audit.parse_rules(b"DOMAIN-SUFFIX,flash.cn\n")
