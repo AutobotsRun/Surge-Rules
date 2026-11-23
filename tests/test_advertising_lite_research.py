@@ -70,8 +70,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(result["invalid"], 2)
         self.assertEqual(result["single_ipv4_32"], 1)
         self.assertEqual(result["single_ipv6_128"], 1)
-        self.assertEqual(result["with_no_resolve"], 2)
-        self.assertEqual(result["without_no_resolve"], 2)
+        self.assertEqual(result["with_no_resolve"], 3)
+        self.assertEqual(result["without_no_resolve"], 1)
 
     def test_hosts_remain_exact_when_compared_to_existing_rules(self):
         exact, unsupported = liteaudit.candidate_rules(
@@ -99,7 +99,7 @@ class Tests(unittest.TestCase):
         result = liteaudit.study_small_pair(native, hosts)
         self.assertEqual(result["native_rules_total"], 4)
         self.assertEqual(result["hosts_ads_only_unique"], 1202)
-        self.assertEqual(result["hosts_already_covered_by_native_exact_or_suffix"], 2)
+        self.assertEqual(result["hosts_already_covered_by_native_rules"], 2)
         self.assertEqual(result["estimated_merged_native_rule_count"], 1204)
         self.assertFalse(any(result["known_good_matched_by_domain_or_keyword"].values()))
 
