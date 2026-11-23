@@ -1,0 +1,5 @@
+# Reviewed WeChat DNS routing exception
+# Verified exact advertising false positive 2026-11-23.
+# Integrated only via rules/WeChat.list; do not add another subscription.
+# Advertising.list must exclude this exact domain if the REJECT rule is before WeChat.
+DOMAIN,dns.weixin.qq.com.cn

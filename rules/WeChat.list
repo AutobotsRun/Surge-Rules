@@ -3,15 +3,16 @@
 # https://github.com/blackmatrix7/ios_rule_script
 # Source snapshot: sources/blackmatrix7/WeChat.list
 # License copy: sources/blackmatrix7/LICENSE
-# Local additions: custom/WeChat-CDN.list and custom/WeChat-PCDN.list
+# Local additions: custom/WeChat-CDN.list, custom/WeChat-DNS.list and custom/WeChat-PCDN.list
 # This file contains only predicates. The calling RULE-SET supplies policy.
-# IMPORTANT: load this WeChat rule set BEFORE Advertising_All.list.
+# IMPORTANT: exclude matching REJECT entries in Advertising when that RULE-SET is earlier in profile order.
 # Review upstream updates and licensing; do not silently replace this file.
 
 IP-CIDR,43.168.80.13/32,no-resolve
 IP-CIDR,43.168.80.15/32,no-resolve
 IP-CIDR,43.168.80.23/32,no-resolve
 IP-CIDR,43.168.80.33/32,no-resolve
+DOMAIN,dns.weixin.qq.com.cn
 DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net
 DOMAIN,dldir1.qq.com
 DOMAIN,slife.xy-asia.com

@@ -53,3 +53,12 @@ GitHub 仓库文件接口对上游这个大型列表没有返回完整正文。�
 - 只有 `schedule` 或 `workflow_dispatch` 事件才允许进入 `propose` 任务；该任务才申请 `contents: write` 与 `pull-requests: write`。
 - GitHub 个人仓库默认可能禁止 Actions 创建 PR。正式合并启用前，需要在 `Settings → Actions → General → Workflow permissions` 核实 `Allow GitHub Actions to create and approve pull requests` 是否允许；本项目仍坚持**禁止自动合并及自动设备部署**。
 - 若只读验证失败，必须看失败日志并修正原因，不得仅通过关闭校验来发布巨型规则集。
+
+## 2026-11-23 微信 DNS 精确排除（第二项）
+
+- AdGuard Home 已通过自定义规则允许 `dns.weixin.qq.com.cn`，但 Surge 现用 Advertising.list 仍直接匹配其 `DOMAIN` 规则并 REJECT。
+- 用户提供的 `Advertising_All.txt`（SHA-256 `01f8b9caf1ab7b9ba58b17ebfcd04dc61b27af0751c43b5daa23ee5e7f6676d9`）第 1197 行恰有一条 `DOMAIN,dns.weixin.qq.com.cn`，无其它 DOMAIN-SUFFIX/DOMAIN-KEYWORD 覆盖；与之前 PCDN 登录域名共计精确排除两条。
+- 同一上游快照生成候选列表预计为 291,172 条，保留全部复杂规则和审查指纹，不扩大排除范围。
+- 将域名加入 `custom/WeChat-DNS.list` 并由同一个 `rules/WeChat.list` 发布；不在设备添加额外规则订阅。
+- 审核配置合并到 main 时触发生成广告候选的自动化，**只生成草稿 PR，不自动合并或部署**。
+- `10.0.0.1` 返回 `198.18.0.153` 属于 Fake-IP 范围，本次不触碰路由器 DNS；解除广告拦截后再验证连接是否正常。

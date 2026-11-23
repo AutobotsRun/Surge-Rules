@@ -10,6 +10,13 @@
       "reason": "WeChat PCDN login request was rejected by Advertising_All and recovered after an exact temporary DIRECT override; narrow exception pending sustained validation.",
       "evidence": "Surge iPhone 15 Pro 2026-11-23 13:55:28 Beijing, request #24035",
       "approved_for_test": true
+    },
+    {
+      "type": "DOMAIN",
+      "value": "dns.weixin.qq.com.cn",
+      "reason": "Exact WeChat DNS hostname falsely rejected by curated Advertising.list even after AdGuard Home allowed it; remove only that DOMAIN predicate.",
+      "evidence": "Surge iPhone 15 Pro match_rule TCP/80 and TCP/443, 2026-11-23; AdGuard Home allowed at 19:01 and 19:03 Beijing. Reviewed Advertising_All.txt SHA256 01f8b9caf1ab7b9ba58b17ebfcd04dc61b27af0751c43b5daa23ee5e7f6676d9, source line 1197.",
+      "approved_for_test": true
     }
   ],
   "reviewed_complex_rules": {

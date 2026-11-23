@@ -8,6 +8,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM = ROOT / "sources/blackmatrix7/WeChat.list"
 PCDN = ROOT / "custom/WeChat-PCDN.list"
+DNS = ROOT / "custom/WeChat-DNS.list"
 CDN = ROOT / "custom/WeChat-CDN.list"
 OUTPUT = ROOT / "rules/WeChat.list"
 
@@ -30,7 +31,10 @@ def parse(path):
 
 def main():
     # Overrides first for diff visibility; policy selection stays in Surge profile.
-    user = parse(CDN) + parse(PCDN)
+    dns_rules = parse(DNS)
+    if dns_rules != ["DOMAIN,dns.weixin.qq.com.cn"]:
+        raise ValueError("Unreviewed WeChat DNS exception")
+    user = parse(CDN) + dns_rules + parse(PCDN)
     vendor = parse(UPSTREAM)
     merged, seen = [], set()
     for rule in user + vendor:
@@ -38,6 +42,8 @@ def main():
         if rule not in seen:
             seen.add(rule)
             merged.append(rule)
+    if "DOMAIN,dns.weixin.qq.com.cn" not in seen:
+        raise ValueError("WeChat DNS exception missing")
     if "DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net" not in seen:
         raise ValueError("PCDN exception missing")
     for line in parse(CDN):
@@ -52,9 +58,9 @@ def main():
         "# https://github.com/blackmatrix7/ios_rule_script",
         "# Source snapshot: sources/blackmatrix7/WeChat.list",
         "# License copy: sources/blackmatrix7/LICENSE",
-        "# Local additions: custom/WeChat-CDN.list and custom/WeChat-PCDN.list",
+        "# Local additions: custom/WeChat-CDN.list, custom/WeChat-DNS.list and custom/WeChat-PCDN.list",
         "# This file contains only predicates. The calling RULE-SET supplies policy.",
-        "# IMPORTANT: load this WeChat rule set BEFORE Advertising_All.list.",
+        "# IMPORTANT: exclude matching REJECT entries in Advertising when that RULE-SET is earlier in profile order.",
         "# Review upstream updates and licensing; do not silently replace this file.",
         "",
     ]

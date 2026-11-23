@@ -11,6 +11,7 @@ spec.loader.exec_module(mod)
 
 TARGET = "DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net"
 EXCLUSIONS = {TARGET}
+WECHAT_DNS = "DOMAIN,dns.weixin.qq.com.cn"
 
 
 class AdvertisingExclusionTests(unittest.TestCase):
@@ -22,6 +23,23 @@ class AdvertisingExclusionTests(unittest.TestCase):
         self.assertNotIn(TARGET, result)
         self.assertIn("DOMAIN,ads.example.com", result)
         self.assertIn("DOMAIN,tracker.example.org", result)
+
+    def test_two_exact_wechat_exclusions_preserve_other_rules(self):
+        entries = {TARGET, WECHAT_DNS}
+        data = ("DOMAIN,ads.example.com\n" + WECHAT_DNS + "\n" + TARGET
+                + "\nDOMAIN,tracker.example.org\n").encode()
+        result, removed, count = mod.transform(data, entries, strict=False)
+        self.assertEqual(count, 4)
+        self.assertEqual(set(removed), entries)
+        self.assertNotIn(WECHAT_DNS, result)
+        self.assertNotIn(TARGET, result)
+        self.assertIn("DOMAIN,ads.example.com", result)
+        self.assertIn("DOMAIN,tracker.example.org", result)
+
+    def test_weed_out_covering_wechat_domain_suffix(self):
+        data = (WECHAT_DNS + "\nDOMAIN-SUFFIX,weixin.qq.com.cn\n").encode()
+        with self.assertRaisesRegex(ValueError, "Potential remaining"):
+            mod.transform(data, {WECHAT_DNS}, strict=False)
 
     def test_missing_expected_rule_blocks_release(self):
         with self.assertRaisesRegex(ValueError, "missing or duplicated"):
