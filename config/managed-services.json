@@ -40,6 +40,13 @@
       "baseline_rules": 46
     },
     {
+      "id": "blackmatrix7-hbo",
+      "name": "HBO",
+      "mirror_path": "upstream/blackmatrix7/HBO.list",
+      "published_path": "rules/HBO.list",
+      "baseline_rules": 50
+    },
+    {
       "id": "blackmatrix7-netflix",
       "name": "Netflix",
       "mirror_path": "upstream/blackmatrix7/Netflix.list",

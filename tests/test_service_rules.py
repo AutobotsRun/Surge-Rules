@@ -1,4 +1,4 @@
-"""Offline regression tests for seven curated GPL-2.0 service rule-sets."""
+"""Offline regression tests for eight curated GPL-2.0 service rule-sets."""
 import hashlib
 import json
 import tempfile
@@ -10,7 +10,7 @@ from scripts import build_service_rules as mod
 NAMES = [
     ("google", "Google"), ("youtube", "YouTube"), ("apple_all", "Apple"),
     ("openai", "OpenAI"), ("telegram", "Telegram"),
-    ("netflix", "Netflix"), ("spotify", "Spotify"),
+    ("netflix", "Netflix"), ("spotify", "Spotify"), ("hbo", "HBO"),
 ]
 
 
@@ -65,12 +65,20 @@ class ManagedServicesTests(unittest.TestCase):
 
     def test_generation_preserves_all_predicates_and_complex_or(self):
         result = mod.build_outputs(self.root)
-        self.assertEqual(len(result), 7)
+        self.assertEqual(len(result), 8)
+        self.assertIn("rules/HBO.list", result)
         raw = (self.root / "upstream/blackmatrix7/Telegram.list").read_bytes()
         output = result["rules/Telegram.list"]
         self.assertTrue(output.endswith(raw))
         self.assertIn(b"OR,((IP-ASN,44907,no-resolve)", output)
         self.assertIn(b"# Local change 2026-11-23:", output)
+
+    def test_real_hbo_rules_preserved_verbatim(self):
+        output = mod.build_outputs(mod.ROOT)["rules/HBO.list"]
+        original = (mod.ROOT / "upstream/blackmatrix7/HBO.list").read_bytes()
+        self.assertEqual(len(mod.source_rules(original, "HBO")), 50)
+        self.assertTrue(output.endswith(original))
+        self.assertIn(b"DOMAIN-SUFFIX,max.com", output)
 
     def test_rejects_tampered_snapshot(self):
         path = self.root / "upstream/blackmatrix7/Google.list"

@@ -70,8 +70,8 @@
       "sha256": "fd78b9a0a2ffedd9102d23256011bf8ec94ad98630c06337fdaa6970f4690832",
       "bytes": 1784,
       "lines": 50,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/HBO.list"
     },
     {
       "id": "logicrw-meta",
