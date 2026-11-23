@@ -205,3 +205,12 @@ The four explicitly allowed service hosts and all eight precautionary mini-progr
 New code: scripts/audit_privacy_hijacking.py; synthetic offline tests: tests/test_privacy_hijacking_audit.py; read-only GitHub Actions workflow: .github/workflows/research-privacy-hijacking.yml. It fetches only the pinned public Git blob bytes, validates Git-object SHA and expected type counts, and outputs aggregate statistics without publishing raw rule lists or user/device data.
 
 **Important distinction:** the GitHub connector analysis independently established the above measurements; Actions workflow pass/fail must be validated from its actual run, not assumed merely because the workflow was added. PR remains DRAFT, no device changes, no main merge.
+
+
+### Follow-up verification: CI and 114.119.160.0/21
+
+**Automated verification PASS:** GitHub Actions run https://github.com/AutobotsRun/Surge-Rules/actions/runs/45202180764 completed successfully. Six focused unit tests passed, all four public Git blobs downloaded with pinned integrity checks, and the expected coverage counts and all 12 protected-domain checks were validated. The standard repository CI run https://github.com/AutobotsRun/Surge-Rules/actions/runs/45202180614 also passed. A small aggregate JSON-only artifact was uploaded; no list source, Surge profile or request traces were uploaded.
+
+**Network identity of the widest Hijacking IP block:** Recent APNIC RDAP-derived records and public routing intelligence consistently associate 114.119.160.0/21 with Huawei Clouds in Singapore, AS136907, covering 2,048 addresses. Source references: https://whatismyip.live/whois/114.119.161.129 ; https://whoisrequest.com/ip/AS136907/114.119.160.0/21 ; https://www.ip2location.com/114.119.160.0 . This association does **not** establish that all 2,048 addresses have malicious behavior, nor that none do. Selected addresses in this prefix have been associated with PetalBot, Huawei's crawler: https://www.netify.ai/resources/ips/114.119.166.4 .
+
+**Interpretation:** A cloud/crawler netblock appearing in a "Hijacking" denylist is another reason to categorize its actual purpose and user impact rather than call every IP a hijacker. Leave the existing rule unchanged during Lite observation; seek legitimate traffic evidence and policy intent before changing it.
