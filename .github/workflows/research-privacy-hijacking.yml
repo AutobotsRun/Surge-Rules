@@ -1,0 +1,47 @@
+name: Audit Privacy, Hijacking and China against Lite (read-only)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/audit_privacy_hijacking.py"
+      - "tests/test_privacy_hijacking_audit.py"
+      - ".github/workflows/research-privacy-hijacking.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Run offline rule-predicate unit tests
+        run: python3 -m unittest discover -s tests -p 'test_privacy_hijacking_audit.py' -v
+      - name: Compare four pinned public Git blobs, export aggregate JSON only
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/audit_privacy_hijacking.py > /tmp/privacy-hijacking-audit.json
+      - name: Validate expected audited outputs
+        run: |
+          python3 - <<'PY'
+          import json
+          x=json.load(open("/tmp/privacy-hijacking-audit.json", encoding="utf-8"))
+          assert x["lite_fully_covered_by_privacy"]["total_rules_fully_covered"] == 86
+          assert x["privacy_fully_covered_by_lite"]["total_rules_fully_covered"] == 1
+          assert x["hijacking_fully_covered_by_privacy"]["total_rules_fully_covered"] == 0
+          assert x["hijacking_fully_covered_by_lite"]["total_rules_fully_covered"] == 0
+          assert x["hijacking_suffixes_fully_covered_by_china"] == 64
+          assert x["hijacking_ip_ranges_intersecting_privacy_ip_ranges"] == 0
+          assert all(not any(matches.values()) for matches in x["protected_host_hits"].values())
+          print("Read-only audited output counts confirmed.")
+          PY
+      - name: Upload statistics (no copied raw lists or personal records)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: privacy-hijacking-overlap-statistics
+          path: /tmp/privacy-hijacking-audit.json
+          retention-days: 14
