@@ -2,6 +2,7 @@
 """Read-only comparison of public domain blocklists; never publishes a RULE-SET."""
 import collections
 import hashlib
+import ipaddress
 import json
 import os
 import re
@@ -21,6 +22,9 @@ SOURCES = {
     "oisd_small": "https://small.oisd.nl",
     "awavenue_surge_only_ads": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Surge-RULE-SET-Only.Ads.list",
     "denzel_mini": "https://raw.githubusercontent.com/DenzelVincent/adblock-dns-aggregator/output/adguard/mini.txt",
+    # Peter Lowe original list, obtained through StevenBlack\'s independently updated
+    # source mirror. License and attribution must be reviewed before distribution.
+    "peter_lowe_hosts_mirror": "https://raw.githubusercontent.com/StevenBlack/hosts/master/data/yoyo.org/hosts",
 }
 DOMAIN = re.compile(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+")
 ADBLOCK = re.compile(r"\|\|([a-z0-9-]+(?:\.[a-z0-9-]+)+)\^")
@@ -89,6 +93,36 @@ def candidate_rules(data, mode):
     return domains, unsupported
 
 
+def audit_native_ip_rules(data):
+    """Counts structural IP risks; does not publish third-party IP entries."""
+    summary = {"ipv4": 0, "ipv6": 0, "non_global": 0,
+               "broad_ipv4_under_24": 0, "broad_ipv6_under_64": 0,
+               "invalid": 0}
+    for item in data.decode("utf-8-sig").splitlines():
+        item = item.strip()
+        kind, _, remainder = item.partition(",")
+        if kind not in {"IP-CIDR", "IP-CIDR6"}:
+            continue
+        try:
+            network = ipaddress.ip_network(remainder.split(",", 1)[0], strict=False)
+            if (kind == "IP-CIDR") != (network.version == 4):
+                raise ValueError("family mismatch")
+        except ValueError:
+            summary["invalid"] += 1
+            continue
+        if network.version == 4:
+            summary["ipv4"] += 1
+            if network.prefixlen < 24:
+                summary["broad_ipv4_under_24"] += 1
+        else:
+            summary["ipv6"] += 1
+            if network.prefixlen < 64:
+                summary["broad_ipv6_under_64"] += 1
+        if not network.is_global:
+            summary["non_global"] += 1
+    return summary
+
+
 def analyze(name, data, mode, refs):
     if mode == "surge":
         exact, suffix, types = surge_rules(data)
@@ -135,6 +169,7 @@ def analyze(name, data, mode, refs):
         "format": mode,
         "source_updated_header": snapshot_date,
         "native_rule_type_counts": dict(types) if mode == "surge" else None,
+        "native_ip_risk_summary": audit_native_ip_rules(data) if mode == "surge" else None,
         "unique_simple_domains": len(domains),
         "unsupported_or_exception_lines": sum(skipped.values()),
         "matched_by_existing_rule_sets": overlap,
@@ -171,7 +206,8 @@ def main():
             (("hagezi_light", "adblock"), ("adguard_dns", "adblock"),
              ("stevenblack_base", "hosts"),
              ("blackmatrix7_advertising_lite", "surge"), ("oisd_small", "adblock"),
-             ("awavenue_surge_only_ads", "surge"), ("denzel_mini", "adblock"))
+             ("awavenue_surge_only_ads", "surge"), ("denzel_mini", "adblock"),
+             ("peter_lowe_hosts_mirror", "hosts"))
         ],
         "limits": "Simple exact domains and suffixes only. For native Surge false-positive checks also test DOMAIN-KEYWORD; IP/regex/AND not simulated. Ignores modifiers, exceptions, precedence, DNS/CNAME, traffic distribution. No third-party content is redistributed.",
     }
