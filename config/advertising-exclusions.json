@@ -11,5 +11,15 @@
       "evidence": "Surge iPhone 15 Pro 2026-11-23 13:55:28 Beijing, request #24035",
       "approved_for_test": true
     }
-  ]
+  ],
+  "reviewed_complex_rules": {
+    "sha256": "fe1ae9ca8060a098b242f2b4270c80ecdfb8d16d9d14711119184e5f88d4f23a",
+    "count": 15,
+    "explanation": "Uploaded upstream snapshot on 2026-11-23 has 14 URL-REGEX and 1 AND. Host-specific expressions did not target the WeChat PCDN hostname; two unscoped path patterns may match some HTTP requests. Changes to these rules require re-review."
+  },
+  "observed_source": {
+    "date": "2026-11-23",
+    "sha256": "01f8b9caf1ab7b9ba58b17ebfcd04dc61b27af0751c43b5daa23ee5e7f6676d9",
+    "active_rules": 291174
+  }
 }
