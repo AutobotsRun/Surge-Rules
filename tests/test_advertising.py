@@ -1,5 +1,6 @@
 """Unit tests for fail-closed exclusion processing (no network or Surge changes)."""
 import importlib.util
+import hashlib
 from pathlib import Path
 import unittest
 
@@ -44,6 +45,22 @@ class AdvertisingExclusionTests(unittest.TestCase):
         data = (TARGET + "\nURL-REGEX,https://example.com/ads\n").encode()
         with self.assertRaisesRegex(ValueError, "Potential remaining"):
             mod.transform(data, EXCLUSIONS, strict=False)
+
+    def test_reviewed_complex_rules_are_allowed_unchanged(self):
+        extra = "URL-REGEX,^https?://ads.example.com\\n"
+        approved = {"sha256": hashlib.sha256(extra.strip().encode()).hexdigest(), "count": 1}
+        result, removed, count = mod.transform((TARGET + "\\n" + extra).encode(), EXCLUSIONS,
+                                              strict=False, reviewed_complex=approved)
+        self.assertIn(extra.strip(), result)
+        self.assertEqual(removed, [TARGET])
+
+    def test_unreviewed_changes_in_complex_rules_fail_closed(self):
+        extra = "URL-REGEX,^https?://ads.example.com\\n"
+        approved = {"sha256": hashlib.sha256(extra.strip().encode()).hexdigest(), "count": 1}
+        changed = "URL-REGEX,^https?://other.example.com\\n"
+        with self.assertRaisesRegex(ValueError, "Complex rules differ"):
+            mod.transform((TARGET + "\\n" + changed).encode(), EXCLUSIONS,
+                          strict=False, reviewed_complex=approved)
 
     def test_html_blocks_release(self):
         with self.assertRaisesRegex(ValueError, "HTML"):
