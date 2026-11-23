@@ -25,5 +25,7 @@ jobs:
           persist-credentials: false
       - name: Python syntax check
         run: python3 -m py_compile scripts/audit_upstreams.py
+      - name: Unit tests (offline)
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Offline validation only (no upstream downloads)
         run: python3 scripts/audit_upstreams.py
