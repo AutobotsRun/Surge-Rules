@@ -36,6 +36,10 @@ jobs:
           assert x["hijacking_fully_covered_by_lite"]["total_rules_fully_covered"] == 0
           assert x["hijacking_suffixes_fully_covered_by_china"] == 64
           assert x["hijacking_ip_ranges_intersecting_privacy_ip_ranges"] == 0
+          assert x["china_internal_redundancy"]["total_fully_covered"] == 45
+          assert x["china_internal_redundancy"]["by_rule_type"]["DOMAIN"] == 2
+          assert x["china_internal_redundancy"]["by_rule_type"]["DOMAIN-SUFFIX"] == 37
+          assert x["china_internal_redundancy"]["by_rule_type"]["IP-CIDR"] == 6
           assert all(not any(matches.values()) for matches in x["protected_host_hits"].values())
           safe=x["security_endpoint_review"]
           assert safe["safebrowsing.googleapis.com"]["privacy"] is True
