@@ -218,3 +218,11 @@ If the previously blocked Google API should still be allowed on spare after roll
 Do not remove the Advertising Lite model conditionals, the four WeChat Direct exceptions, or any other Rule section lines. On rollback, re-test actual matching instead of relying on ready=true alone. Preserve iCloud shared-profile model scoping for other devices.
 
 **Status: the spare-device Privacy migration has successfully passed indexed live rule matching; no claims of user-app empirical long-term compatibility or primary-device inspection are made.**
+
+## Hijacking cleanup on independently synced spare iPhone
+
+The spare iPhone 15 Pro uses a **separate iCloud account** from the primary iPhone Air. The connected Surge controller edits the spare only; no iCloud profile synchronization reaches the primary device.
+
+A separate, staged Hijacking cutover was completed on the spare with the pinned 227-entry Hijacking-Curated-TEST.list and verified by effective REJECT matches for malicious-looking domains and the existing IP prefixes. This did not alter the working 39,935-rule Privacy-Curated-TEST.list or the Advertising Lite test. The original Hijacking line was removed from the spare only after the curated resource indexed and matched correctly.
+
+Adobe geo2.adobe.com is still sinkholed by the independently configured AdGuard Home DNS and is not proven reachable. Full test and rollback details are in PR #13: https://github.com/AutobotsRun/Surge-Rules/pull/13 .
