@@ -24,6 +24,8 @@ jobs:
           persist-credentials: true
       - name: Fetch and validate all sources
         run: python3 scripts/audit_upstreams.py --sync --report "$RUNNER_TEMP/surge-upstreams-report.md"
+      - name: Verify generated state before proposing changes
+        run: python3 scripts/audit_upstreams.py
       - name: Propose changes in a draft PR (no merge or release)
         shell: bash
         env:
