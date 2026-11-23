@@ -77,5 +77,28 @@ class Tests(unittest.TestCase):
         self.assertFalse(liteaudit.covered(exact, set(), "child.ads.example.net"))
 
 
+    def test_small_pair_deduplicates_only_semantically_covered_hosts(self):
+        native = (
+            b"DOMAIN,already.example.com\n"
+            b"DOMAIN-SUFFIX,covered.example.com\n"
+            b"IP-CIDR,8.8.8.8/32\n"
+            b"DOMAIN-KEYWORD,adtracking\n"
+        )
+        extra = b"".join(
+            ("0.0.0.0 example%d.example.net\n" % i).encode()
+            for i in range(1200)
+        )
+        hosts = (
+            b"0.0.0.0 already.example.com\n"
+            b"0.0.0.0 child.covered.example.com\n" + extra
+        )
+        result = liteaudit.study_small_pair(native, hosts)
+        self.assertEqual(result["native_rules_total"], 4)
+        self.assertEqual(result["hosts_ads_only_unique"], 1202)
+        self.assertEqual(result["hosts_already_covered_by_native_exact_or_suffix"], 2)
+        self.assertEqual(result["estimated_merged_native_rule_count"], 1204)
+        self.assertFalse(any(result["known_good_matched_by_domain_or_keyword"].values()))
+
+
 if __name__ == "__main__":
     unittest.main()
