@@ -17,6 +17,8 @@ SOURCES = {
     "hagezi_light": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt",
     "adguard_dns": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
     "stevenblack_base": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+    "blackmatrix7_advertising_lite": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/AdvertisingLite/AdvertisingLite_All.list",
+    "oisd_small": "https://small.oisd.nl",
 }
 DOMAIN = re.compile(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+")
 ADBLOCK = re.compile(r"\|\|([a-z0-9-]+(?:\.[a-z0-9-]+)+)\^")
@@ -27,11 +29,11 @@ KNOWN_GOOD = ["apd-pcdnwxlogin.teg.tencent-cloud.net",
 
 def fetch(name, url):
     p = urlsplit(url)
-    if p.scheme != "https" or p.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io"}:
+    if p.scheme != "https" or p.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io", "small.oisd.nl", "oisd.nl"}:
         raise ValueError("unexpected source: " + name)
     with urlopen(Request(url, headers={"User-Agent": "lite-rule-audit/1.0"}), timeout=90) as response:
         r = urlsplit(response.geturl())
-        if r.scheme != "https" or r.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io"}:
+        if r.scheme != "https" or r.hostname not in {"raw.githubusercontent.com", "adguardteam.github.io", "small.oisd.nl", "oisd.nl"}:
             raise ValueError("unexpected redirect: " + name)
         data = response.read(36 * 1024 * 1024 + 1)
     if not 1000 <= len(data) <= 36 * 1024 * 1024 or data.lstrip().lower().startswith(b"<html"):
@@ -86,9 +88,28 @@ def candidate_rules(data, mode):
 
 
 def analyze(name, data, mode, refs):
-    domains, skipped = candidate_rules(data, mode)
+    if mode == "surge":
+        exact, suffix, types = surge_rules(data)
+        domains = exact | suffix
+        skipped = collections.Counter({"non_domain_native_rules": sum(
+            amount for kind, amount in types.items() if kind not in {"DOMAIN", "DOMAIN-SUFFIX"}
+        )})
+        keywords = {
+            line.split(",", 1)[1].split(",", 1)[0].lower()
+            for line in data.decode("utf-8-sig").splitlines()
+            if line.startswith("DOMAIN-KEYWORD,")
+        }
+        snapshot_date = next((line[10:].strip() for line in
+                              data.decode("utf-8-sig").splitlines()[:25]
+                              if line.startswith("# UPDATED:")), None)
+    else:
+        domains, skipped = candidate_rules(data, mode)
+        exact, suffix = (set(), domains) if mode == "adblock" else (domains, set())
+        keywords, snapshot_date = set(), None
     if len(domains) < 100:
         raise ValueError("too few valid entries: " + name)
+    if mode == "surge" and sum(types.values()) < 30000:
+        raise ValueError("unexpectedly small native Surge snapshot")
     overlap = {
         source: sum(covered(exact, suffix, host) for host in domains)
         for source, (exact, suffix) in refs.items()
@@ -99,6 +120,8 @@ def analyze(name, data, mode, refs):
         "bytes": len(data),
         "sha256": hashlib.sha256(data).hexdigest(),
         "format": mode,
+        "source_updated_header": snapshot_date,
+        "native_rule_type_counts": dict(types) if mode == "surge" else None,
         "unique_simple_domains": len(domains),
         "unsupported_or_exception_lines": sum(skipped.values()),
         "matched_by_existing_rule_sets": overlap,
@@ -107,9 +130,10 @@ def analyze(name, data, mode, refs):
             not any(covered(*refs[source], host) for source in refs) for host in domains
         ),
         "known_good_matched_by_candidate": {
-            host: (covered(set(), domains, host) if mode == "adblock" else host in domains)
+            host: covered(exact, suffix, host) or any(token in host for token in keywords)
             for host in KNOWN_GOOD
         },
+        "notes": "Native rules are not equivalent to DNS/Hosts rules. Native Surge IP/regex/AND and keyword rules are not fully evaluated by this simple domain comparison." if mode == "surge" else None,
     }
 
 
@@ -128,9 +152,10 @@ def main():
         "candidates": [
             analyze(name, blobs[name], mode, refs) for name, mode in
             (("hagezi_light", "adblock"), ("adguard_dns", "adblock"),
-             ("stevenblack_base", "hosts"))
+             ("stevenblack_base", "hosts"),
+             ("blackmatrix7_advertising_lite", "surge"), ("oisd_small", "adblock"))
         ],
-        "limits": "Simple exact domains and suffixes only. Ignores IP, regex, modifiers, exceptions, precedence, DNS/CNAME, traffic distribution. No third-party content is redistributed.",
+        "limits": "Simple exact domains and suffixes only. For native Surge false-positive checks also test DOMAIN-KEYWORD; IP/regex/AND not simulated. Ignores modifiers, exceptions, precedence, DNS/CNAME, traffic distribution. No third-party content is redistributed.",
     }
     path = Path("/tmp/advertising-lite-comparison.json")
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
