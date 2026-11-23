@@ -264,3 +264,21 @@ Hijacking contains a flash.cn suffix predicate, intended to match the parent and
 ### Decision
 
 **Keep Privacy_All, Hijacking and China_All unchanged during the Advertising Lite trial.** Record Google Safe Browsing as a high-priority **separate compatibility investigation**, and the /21 prefix as a future **collateral-damage audit**. No new Direct exceptions or live profile changes are authorized by this review.
+
+
+### Live Hijacking prefix match confirmation (no traffic generated)
+
+On the spare iPhone 15 Pro, read-only Surge rule matching returned the following:
+
+| Target IP | Matched rule | Decision |
+|---|---|---|
+| 114.119.160.1 | Hijacking IP-CIDR 114.119.160.0/21 | REJECT |
+| 114.119.164.8 | Hijacking IP-CIDR 114.119.160.0/21 | REJECT |
+| 114.119.167.254 | Hijacking IP-CIDR 114.119.160.0/21 | REJECT |
+| 222.186.61.96 | Hijacking IP-CIDR 222.186.61.96/31 | REJECT |
+| 222.186.61.97 | Hijacking IP-CIDR 222.186.61.96/31 | REJECT |
+| 222.186.61.98 | GEOIP CN (does not match preceding Hijacking /31) | Direct |
+
+This verifies actual Surge policy matching, but **does not establish whether real applications attempted to connect to those IPs**. The recent buffered request search for a hostname containing "safebrowsing" returned zero matches at inspection time; the buffer is limited and cannot prove no app ever uses those hosts.
+
+No network packet was sent to any of the six IP targets; match_rule evaluates the active rule tree.
