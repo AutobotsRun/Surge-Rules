@@ -1,0 +1,31 @@
+name: Validate Surge rules and source catalog
+
+on:
+  pull_request:
+    paths:
+      - "custom/**"
+      - "upstream/**"
+      - "upstreams/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Python syntax check
+        run: python3 -m py_compile scripts/audit_upstreams.py
+      - name: Unit tests (offline)
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Offline validation only (no upstream downloads)
+        run: python3 scripts/audit_upstreams.py
