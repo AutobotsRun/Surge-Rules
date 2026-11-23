@@ -226,3 +226,42 @@ These names are public upstream rules, not user request-log observations. Our fo
 Build a reproducible, testable **non-deploying** preview compiler with pinned hashes and required exact exceptions, leaving AWAvenue functional-domain candidates and the 13 IP entries excluded pending manual review. Start with exact Peter Lowe domain semantics; permit explicit suffix promotions only after individual review. Produce source/license notices, SHA-256, and private/test-only artifacts; never expose third-party raw lists or private Surge logs in public GitHub Actions. Final device A/B must be on spare iPhone 15 Pro only, while the main iPhone Air and existing production URLs stay unchanged.
 
 **Status: PR #12 remains draft research, not a new subscription.**
+
+
+## Sixth research round: reproducible non-deploying Lite preview (2026-11-23)
+
+**Result:** https://github.com/AutobotsRun/Surge-Rules/actions/runs/45187623797 succeeded. 19 research/preview unit tests passed, as did source comparison and the memory-only preview step. The ordinary repo validation run https://github.com/AutobotsRun/Surge-Rules/actions/runs/45187623618 succeeded.
+
+New files:
+- \`scripts/preview_advertising_lite.py\`: strict source reader, pinned-source SHA-256 verification, explicit exact HOSTS -> DOMAIN mapping, native-rule semantics retained, protected functionality checks. Outputs **JSON counts and digest only**, writes **no rule file**.
+- \`tests/test_advertising_lite_preview.py\`: offline fail-closed tests for source format, known-good domains, functional-domain quarantine, IP omission, deterministic results, keyword scope and suffix hazards.
+- \`.github/workflows/research-advertising-lite.yml\`: now runs all 19 Lite tests and a metadata-only preview alongside its nine-source analysis. Public CI artifacts contain statistical JSON only, not third-party rule contents.
+
+### Exact-hosts safety-first in-memory preview
+
+| Measurement | Verified count |
+| --- | ---: |
+| AWAvenue native Only.Ads incoming | 671 |
+| Original IP-CIDR rules omitted pending review | 13 |
+| Potential functional exact host rules quarantined | 8 |
+| AWAvenue native rules retained | **650** |
+| Peter Lowe official \`notrackers=1\` HOSTS total | 2,254 |
+| Peter Lowe exact domains newly included after semantic deduplication | **2,240** |
+| **Preview rules in memory** | **2,890** |
+| Known-good exact/suffix/keyword conflicts | 0 |
+| Eight functional-review-domain conflicts after quarantine | 0 |
+
+Canonical deterministic in-memory sorted-line digest: \`92cdd3dd0eed603d9eb153fed92b06ef8dd9d21ef949df883ac29c098ffdf632\`. It is a **preview digest** and not a published file or a Surge-verified parser artifact.
+
+Source pins from the audited public snapshots:
+- AWAvenue Only.Ads SHA-256: \`45cb8e7fc318765c85353c5ddfcabd216978288ba271de7f32e085a876319832\`
+- Peter Lowe official \`notrackers=1\` SHA-256: \`f1e3eaf111ed2840a4630b9a94f98169988eea5fde282fee62b610410879d1e5\`
+
+The preview intentionally **fails closed** if either upstream updates or the parser sees an unknown structure. Refreshing a source requires reviewing its actual diff and explicitly updating the source pin. Nothing silently changes on a phone.
+
+Remaining cautions:
+1. HOSTS-to-exact-DOMAIN underblocks descendant ad hosts relative to Peter Lowe's higher-level DNS-zone blocking intent; future suffix promotions must be separately audited. The preliminary 2,924-rule all-suffix alternative is **not** a safe deployable candidate.
+2. The eight quarantined exact hosts are plausible functional endpoints based on naming, not confirmed false positives. Their exclusion is an experimental safety precaution, not an upstream correction.
+3. Quarantining exact hostnames and checking four locally verified services cannot guarantee no other breakage. The source includes other Tencent/WeChat, payment, CDN and app-resource names that still warrant app-by-app validation.
+4. Licensing/source-notice work and Surge parsing on real iOS remain mandatory before publishing. The private iPhone 15 Pro A/B must replace, not stack, the active Advertising subscription; save the original URL for immediate rollback. The primary iPhone Air remains untouched.
+5. **No \`rules/Advertising-Lite.list\` exists; nothing has been merged; no devices, AdGuard Home filters, or active subscription URLs were modified.**
