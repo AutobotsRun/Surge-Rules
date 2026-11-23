@@ -50,10 +50,10 @@
     {
       "id": "blackmatrix7-apple_all",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Apple/Apple_All.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Apple_All.list"
     },
     {
@@ -68,10 +68,10 @@
     {
       "id": "blackmatrix7-google",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Surge/Google/Google.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Google.list"
     },
     {
@@ -95,19 +95,19 @@
     {
       "id": "blackmatrix7-netflix",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Netflix/Netflix.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Netflix.list"
     },
     {
       "id": "blackmatrix7-openai",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/OpenAI/OpenAI.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/OpenAI.list"
     },
     {
@@ -158,19 +158,19 @@
     {
       "id": "blackmatrix7-spotify",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Spotify/Spotify.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Spotify.list"
     },
     {
       "id": "blackmatrix7-telegram",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Telegram/Telegram.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Telegram.list"
     },
     {
@@ -185,10 +185,10 @@
     {
       "id": "blackmatrix7-youtube",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/YouTube/YouTube.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/YouTube.list"
     }
   ]
