@@ -27,7 +27,7 @@ class HijackingCandidateTests(unittest.TestCase):
         a, b, c = self.fixture()
         with a, b, c:
             payload, manifest = m.build(RAW)
-        self.assertNotIn(b"DOMAIN,geo2.adobe.com\n", payload)
+        self.assertNotIn(m.REMOVED, m.parse_rules(payload))
         self.assertIn(b"DOMAIN-SUFFIX,bad.example\n", payload)
         self.assertIn(b"IP-CIDR,114.119.160.0/21,no-resolve\n", payload)
         self.assertTrue(payload.endswith(RAW.replace(m.REMOVED+b"\n", b"")))
