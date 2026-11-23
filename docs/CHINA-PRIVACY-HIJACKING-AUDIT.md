@@ -467,3 +467,14 @@ On the connected spare iPhone, safebrowsing.urlsec.qq.com currently matches Priv
 **Review gate before sharing or recommending any Surge configuration for Safari users:** verify the target phone's iOS device Region, Safari Fraudulent Website Warning setting, **actual** [Rule] ordering and DNS filtering path (including whether AdGuard Home is used), then check real request behavior or a reputable nonmalicious test page where appropriate. If functional interference is supported, consider an exact-host exception limited to the target profile AND a separate DNS allow decision only if DNS sinkholing is confirmed. Such an exception has a privacy tradeoff (Apple notes that providers may log the client IP). Do not disable all Privacy protection, disable Safari warning, or claim existing warnings are broken without evidence.
 
 The existing Chrome-primary spare's tested Lite/Privacy/Hijacking/China baseline remains unchanged. No unverified edits to any other device were made.
+
+
+## Safari family-device compatibility decision (China-mainland device region)
+
+User confirmed that their spouse uses Safari and that the spouse's iPhone device Region is **China mainland** (Settings > General > Language & Region). Apple's current Safari & Privacy disclosure (last updated 2026-10-26; https://www.apple.com/legal/privacy/data/en/safari/) states that Safari **may** use Tencent Safe Browsing for this device region, and Google/Apple safety services may also be used. Apple states the full visited URL is not shared with the Safe Browsing provider, but Tencent may log the request IP address.
+
+**Do not extrapolate spare-phone checks to spouse's actual Surge profile.** The controller presently accesses only the independent spare iPhone 15 Pro. On that device, exact safebrowsing.urlsec.qq.com is blocked in Privacy-Curated and AdGuard Home returns 0.0.0.0. The spouse's Surge subscription, DNS path and browser request behavior are **not verified**. Confirm the spouse's actual [Rule] and DNS configuration and Safari Fraudulent Website Warning option before editing or sharing any updated profile.
+
+**Possible smallest exception if confirmed relevant and approved:** a precise DOMAIN,safebrowsing.urlsec.qq.com,Direct (before Privacy) and, for clients whose DNS actually reaches this same AdGuard Home filter, the matching exact DNS allowlist rule. Neither a Surge-only direct override nor a DNS-only allow is sufficient when both independent layers block the host; the exact hostname is historically attributed to Safari Safe Browsing but current use on a specific iOS release is unproven. Consider privacy impact before whitelisting; do not disable broad tracking protection or the Safari fraudulent-site warning to compensate.
+
+**Status:** research only; no policy edits on spouse's iPhone and no AdGuard Home allowlist additions. Main iPhone and spare test baseline unchanged.
