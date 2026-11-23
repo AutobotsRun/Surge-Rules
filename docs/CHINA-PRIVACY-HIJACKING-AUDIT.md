@@ -58,7 +58,7 @@ Read-only matched examples from spare device:
 
 Privacy_All is a **tracking / telemetry / user-behavior blocking** list, not an all-purpose network privacy guarantee. Rules may suppress telemetry requests even where there is no visible advertisement. A specific verified example is `DOMAIN-KEYWORD,analytics.`, which currently REJECTs `analytics.strava.com`. There are likely functional edge cases: apps may use analytics and other subdomains for shared initialization, troubleshooting or other features. Blocklisting alone neither encrypts connections nor prevents every form of data collection.
 
-**Overlap assessment status:** unknown for the complete sets. We have not computed exact or semantic coverage intersections with the 2,890-rule Lite candidate. Never remove Privacy solely because Advertising Lite was successfully loaded, especially while conducting its A/B trial.
+**Overlap assessment update (superseded by subsequent full-list audits below):** the complete 39,936-rule Privacy file was fetched through Git Blob and compared with the fixed Lite snapshot. Exactly 86 / 2,890 Lite predicates are fully covered by Privacy. This is static rule coverage, not traffic overlap; keeping Privacy during A/B is still recommended.
 
 ## Hijacking: what it does and why it is not pure advertisement filtering
 
@@ -73,7 +73,7 @@ Since the fixed-IP portion may age, review prefix ownership and false-positive r
 - **Keep all three current active rule sets unchanged during the Lite observation period.** Continue independently collecting specific false-positive hostnames, ideally with Surge rule-source and AdGuard Home DNS evidence.
 - **Do not blindly merge Privacy + Hijacking + Lite.** Different provenance, purpose, update cadence, and false-positive risk. If future overlapping rules are removed, validate *effective* ordered matching and real app flows first.
 - **China_All is a safer research target than an immediate deployment target.** Focus on its 9 keyword rules and 31 UA rules, potential redundant/malformed exact domains, and any material overseas service misrouting.
-- **Privacy_All requires a separate large-file audit pipeline** for complete set overlap, source pinning, and type-aware intersection. Avoid claims based solely on its count.
+- **Privacy_All now has two independent large-file audit pipelines** with pinned snapshots and type-aware comparisons. These establish static rule coverage, not live traffic behavior.
 - **Hijacking can be individually reviewed in a small offline audit** of 186 hostname predicates plus 42 IP entries; prioritize stale IP/CIDR validity, ambiguous publisher/Adobe entries.
 - Only after observation and evidence would we propose a new fixed-commit, license-compliant alternative with separate rollback. No production policy or service rules were changed in this audit.
 
@@ -214,3 +214,53 @@ New code: scripts/audit_privacy_hijacking.py; synthetic offline tests: tests/tes
 **Network identity of the widest Hijacking IP block:** Recent APNIC RDAP-derived records and public routing intelligence consistently associate 114.119.160.0/21 with Huawei Clouds in Singapore, AS136907, covering 2,048 addresses. Source references: https://whatismyip.live/whois/114.119.161.129 ; https://whoisrequest.com/ip/AS136907/114.119.160.0/21 ; https://www.ip2location.com/114.119.160.0 . This association does **not** establish that all 2,048 addresses have malicious behavior, nor that none do. Selected addresses in this prefix have been associated with PetalBot, Huawei's crawler: https://www.netify.ai/resources/ips/114.119.166.4 .
 
 **Interpretation:** A cloud/crawler netblock appearing in a "Hijacking" denylist is another reason to categorize its actual purpose and user impact rather than call every IP a hijacker. Leave the existing rule unchanged during Lite observation; seek legitimate traffic evidence and policy intent before changing it.
+
+## Third round: validated CI outcomes, security-function review and aged cloud IP range (2026-11-23)
+
+## Third round: validated CI outcomes, security-function review and aged cloud IP range (2026-11-23)
+
+### Independent workflow result verification
+
+The second audit script and its independent CI checks completed successfully:
+
+- Full pinned public Git-blob static audit: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45202180764 — **success**, 6/6 offline tests; its job validated 86/1/0/64 counts, checked twelve protected hosts and uploaded **only aggregate statistics**.
+- Independent source comparison: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45202180632 — **success**, 7/7 offline tests.
+- General repository validation: https://github.com/AutobotsRun/Surge-Rules/actions/runs/45202180614 — **success**.
+- Two read-only scripts are temporarily retained as **independent cross-checks**. They are not different lists. Consolidation can be considered once both test fixtures are preserved.
+
+These assess *fixed source predicates*, not live user HTTP requests, real-device performance, RAM consumption or AdGuard Home DNS interception.
+
+### Potential security-function false positive in Privacy_All
+
+Fresh read-only Surge rule matches on the spare iPhone 15 Pro:
+
+| Destination | Effective match | Outcome | Caveat |
+|---|---|---|---|
+| safebrowsing.googleapis.com | Privacy_All exact domain | REJECT | Google officially identifies it as a Safe Browsing API endpoint |
+| safebrowsing.urlsec.qq.com | Privacy_All exact domain | REJECT | Also receives DNS 0.0.0.0; vendor role not independently verified |
+| geo2.adobe.com | Hijacking exact domain | REJECT | AdGuard Home also supplies DNS 0.0.0.0 |
+| www.microsoft.com | China_All broad microsoft keyword | Direct | Broad routing, not a reject |
+
+Google documentation: https://developers.google.com/safe-browsing/reference/rest
+
+**Risk qualification:** These Surge rules definitely match, but this does NOT prove that the user's installed Chrome, Safari or other apps call the Safe Browsing endpoint or that browser protections have failed. The Privacy rule predates the Lite experiment and **is not caused by Lite**. Confirm the calling app and account for independent AdGuard Home blocking before considering an allowlist exception.
+
+### Hijacking broad IP block: current cloud infrastructure
+
+The Hijacking list still contains IP-CIDR,114.119.160.0/21,no-resolve, a **2,048-address** block. Recent public prefix/ASN directories associate its origin with **AS136907 / HUAWEI CLOUDS**, including Singapore infrastructure:
+
+- https://ipinfo.io/114.119.164.8
+- https://whoisrequest.com/ip/AS136907/114.119.160.0/21
+- https://httpsmonitor.com/asn/AS136907
+
+An ASN route does NOT establish the reputation, tenant owner, or malicious/legitimate status of all IPs in the whole /21. Blocking a shared cloud prefix could create collateral damage; the old block may also still be justified. Require real app failure evidence and current IP reputation checks before changes.
+
+The other broad rule, 222.186.61.96/31, covers two IPv4 addresses; the remaining forty IPv4 Hijacking rules are /32.
+
+### flash.cn runtime nuance
+
+Hijacking contains a flash.cn suffix predicate, intended to match the parent and all child hostnames. A fresh Surge match for flash.cn instead returned **DNS lookup failed / FINAL policy**, not Hijacking REJECT on that particular check. File membership and actual runtime match are not equivalent, especially when DNS fails.
+
+### Decision
+
+**Keep Privacy_All, Hijacking and China_All unchanged during the Advertising Lite trial.** Record Google Safe Browsing as a high-priority **separate compatibility investigation**, and the /21 prefix as a future **collateral-damage audit**. No new Direct exceptions or live profile changes are authorized by this review.
