@@ -114,6 +114,15 @@ def analyze(name, data, mode, refs):
         source: sum(covered(exact, suffix, host) for host in domains)
         for source, (exact, suffix) in refs.items()
     }
+    current_exact, current_suffix = refs["current_advertising"]
+    # Reverse coverage is intentionally conservative: an exact candidate rule
+    # cannot cover all subdomains of an existing DOMAIN-SUFFIX predicate.
+    existing_exact_covered = sum(
+        covered(exact, suffix, host) for host in current_exact
+    )
+    existing_suffix_covered = sum(
+        covered(set(), suffix, host) for host in current_suffix
+    )
     return {
         "name": name,
         "url": SOURCES[name],
@@ -129,6 +138,10 @@ def analyze(name, data, mode, refs):
         "not_matched_by_any_existing_rule_set": sum(
             not any(covered(*refs[source], host) for source in refs) for host in domains
         ),
+        "current_exact_domains_covered_by_candidate": existing_exact_covered,
+        "current_suffix_domains_covered_by_candidate": existing_suffix_covered,
+        "existing_exact_domains": len(current_exact),
+        "existing_suffix_domains": len(current_suffix),
         "known_good_matched_by_candidate": {
             host: covered(exact, suffix, host) or any(token in host for token in keywords)
             for host in KNOWN_GOOD
