@@ -1,0 +1,19 @@
+{
+  "kind": "privacy-curated-surge-test-only",
+  "not_for_production": true,
+  "created": "2026-11-23",
+  "source": {
+    "repository": "blackmatrix7/ios_rule_script",
+    "path": "rule/Surge/Privacy/Privacy_All.list",
+    "git_blob_sha": "a75df944a7a0fcae26f762059c0f7fd72f42c420",
+    "license": "GPL-2.0"
+  },
+  "candidate": {
+    "path": "experiments/privacy-curated/Privacy-Curated-TEST.list",
+    "git_blob_sha": "71485074a103d11998a75432ad7566833a97657f",
+    "active_rule_count": 39935,
+    "original_rule_count": 39936,
+    "removed_exact_rule": "DOMAIN,safebrowsing.googleapis.com"
+  },
+  "notes": "This is a pinned, single-removal test variant. It retains original upstream comments and rule order, and has no automatic deployment. Original source header counts still represent original source; candidate active count is 39,935."
+}
