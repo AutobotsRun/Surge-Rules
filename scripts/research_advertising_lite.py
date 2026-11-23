@@ -19,6 +19,8 @@ SOURCES = {
     "stevenblack_base": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
     "blackmatrix7_advertising_lite": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/AdvertisingLite/AdvertisingLite_All.list",
     "oisd_small": "https://small.oisd.nl",
+    "awavenue_surge_only_ads": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Surge-RULE-SET-Only.Ads.list",
+    "denzel_mini": "https://raw.githubusercontent.com/DenzelVincent/adblock-dns-aggregator/output/adguard/mini.txt",
 }
 DOMAIN = re.compile(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+")
 ADBLOCK = re.compile(r"\|\|([a-z0-9-]+(?:\.[a-z0-9-]+)+)\^")
@@ -108,8 +110,10 @@ def analyze(name, data, mode, refs):
         keywords, snapshot_date = set(), None
     if len(domains) < 100:
         raise ValueError("too few valid entries: " + name)
-    if mode == "surge" and sum(types.values()) < 30000:
-        raise ValueError("unexpectedly small native Surge snapshot")
+    if mode == "surge":
+        minimum = 30000 if name == "blackmatrix7_advertising_lite" else 500
+        if sum(types.values()) < minimum:
+            raise ValueError("unexpectedly small native Surge snapshot: " + name)
     overlap = {
         source: sum(covered(exact, suffix, host) for host in domains)
         for source, (exact, suffix) in refs.items()
@@ -166,7 +170,8 @@ def main():
             analyze(name, blobs[name], mode, refs) for name, mode in
             (("hagezi_light", "adblock"), ("adguard_dns", "adblock"),
              ("stevenblack_base", "hosts"),
-             ("blackmatrix7_advertising_lite", "surge"), ("oisd_small", "adblock"))
+             ("blackmatrix7_advertising_lite", "surge"), ("oisd_small", "adblock"),
+             ("awavenue_surge_only_ads", "surge"), ("denzel_mini", "adblock"))
         ],
         "limits": "Simple exact domains and suffixes only. For native Surge false-positive checks also test DOMAIN-KEYWORD; IP/regex/AND not simulated. Ignores modifiers, exceptions, precedence, DNS/CNAME, traffic distribution. No third-party content is redistributed.",
     }
