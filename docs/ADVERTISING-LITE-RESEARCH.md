@@ -278,3 +278,18 @@ This is a **production full Advertising baseline**, **NOT a Lite test**. Only an
 - The local DNS resolver/AdGuard Home independently returned 0.0.0.0 for several publicly listed Tencent/WeChat resource hostnames. Replacing a Surge-only Advertising RULE-SET would not necessarily unblock requests already sinkholed upstream. A/B methodology must keep resolver filtering constant and isolate the component under test.
 - This observation supports retaining the exact known-good exception tests and quarantining ambiguous mini-program endpoints in the Lite study; it does not demonstrate Lite compatibility, reduced breakage, advertising coverage, or faster matching.
 - **No payment initiated by the assistant, no Surge/AdGuard modifications, no public request dump.** Keep PR in draft research state until explicit real-device Lite validation is possible.
+
+
+## Eighth research round: offline test-only export with notices (2026-11-23)
+
+- Checked the official Surge external RULE-SET format at https://manual.nssurge.com/rules/ruleset.html. The candidate mixes DOMAIN, DOMAIN-SUFFIX and DOMAIN-KEYWORD, so it is **not** a DOMAIN-SET. Surge silently skips invalid lines with a warning, so CI must strictly lint every generated line.
+- Checked Peter Lowe's explicit permission to combine and publish (https://pgl.yoyo.org/as/) and AWAvenue's GNU GPL-3.0 license (https://github.com/TG-Twilight/AWAvenue-Ads-Rule/blob/main/LICENSE).
+- Added exporter scripts/export_advertising_lite_test_artifact.py and four focused offline tests. The exporter checks both pinned upstream SHA-256 values, strict source/rule syntax, count=2,890, exact canonical digest, the 13-IP exclusion count, eight quarantined hosts, and full upstream GPL license availability. Every artifact has attribution/provenance, modification disclosures, actual license text, and a JSON manifest.
+- **Live CI:** https://github.com/AutobotsRun/Surge-Rules/actions/runs/45191084044 succeeded, **23/23 unit tests** passed, export succeeded, and draft-only artifact upload succeeded. Standard repo validation https://github.com/AutobotsRun/Surge-Rules/actions/runs/45191084059 succeeded.
+- The draft-PR-only Actions artifact is **advertising-lite-surge-test-only**, expires after seven days, and contains Advertising-Lite-TEST.list, LICENSE.GPL-3.0.txt, THIRD_PARTY_NOTICES.md, and manifest.json.
+- Full file SHA-256 (including attribution comment header): 240347ee54b5baee112535ea647a8cce4878bba5b971924072066bdedf8ed0a7
+- Canonical 2,890 rule-line SHA-256 (without header): 92cdd3dd0eed603d9eb153fed92b06ef8dd9d21ef949df883ac29c098ffdf632
+- Added docs/ADVERTISING-LITE-AB-TEST.md: spare iPhone 15 Pro only, stable primary untouched, persist known-good Direct exceptions, compare separate full vs Lite phases **without stacking**, account for AdGuard Home DNS interference, verify Surge loading and restore the original profile.
+- No file was committed under rules/ or default branch. The Actions artifact is **not a public raw URL**, a live subscription, or proof of Surge/iOS compatibility. A/B remains unperformed pending controlled local import on the spare device.
+
+Previous notes saying there is "no list exported" describe the earlier **memory-only preview** stage; the later **test-only Actions artifact** now contains a generated .list, but remains outside the repo's live rule catalog.
