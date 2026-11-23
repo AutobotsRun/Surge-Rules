@@ -52,3 +52,18 @@ Do not disable Safari's Fraudulent Website Warning or visit actual malicious web
 - Leave Advertising Lite, Hijacking Curated, four known-good WeChat exceptions and China_All untouched.
 
 **No change on the primary phone or any family member's phone should occur until the curated variant, resolver path, and Safari safety policy have been reviewed.**
+
+
+## Live spare trial gate: pending main-app indexing (2026-11-24)
+
+The source-pinned 39,934-rule candidate is now safely staged on the connected **spare iPhone 15 Pro only**, before the previously proven working 39,935-rule Privacy-Curated list. **The earlier list is still active as an unconditional fallback**, so the new candidate cannot silently remove tracking protection while its index is pending.
+
+- Pinned URL: https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/4360b37499d7b73980e8b8dadd237715be5436ec/experiments/privacy-curated/Privacy-Safari-TEST.list
+- The new resource refresh returned success. Its current status is ready=true **with error=No index** — this is NOT functional readiness.
+- Actual tracking target analytics.strava.com still matches the older 39,935-rule Privacy-Curated REJECT (fallback); Tencent safebrowsing.urlsec.qq.com likewise still matches the older Privacy-Curated REJECT.
+- Google Safe Browsing remains routed by Google.list to US. Advertising Lite and Hijacking Curated have not been changed.
+- As with the previous large ruleset migration, the next action is to open the **Surge iOS main app on the spare** and verify the new on-disk index. Do not disable any ad blocking, DNS protection or Safari security warning.
+- We will retire the old Privacy fallback only after the new list is error-free and demonstrably matches retained tracking domains. **DNS allow from the Draft PR remains UNMERGED and AdGuard Home remains unchanged.**
+- No real-world Safari unsafe-website warning test has been performed. The connected device is not the Safari user's phone.
+
+**No claim that Tencent Safari access has been restored.** The old Privacy fallback continues to deny it and home DNS still returns 0.0.0.0 until the separate proposed DNS choice is reviewed.
