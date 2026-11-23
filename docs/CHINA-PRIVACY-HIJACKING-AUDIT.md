@@ -1,5 +1,7 @@
 # China_All / Privacy_All / Hijacking — read-only rule audit
 
+> **Device-scope correction (2026-11-24):** The user confirmed that the spare iPhone 15 Pro uses a **separate iCloud account** from the primary iPhone Air. Therefore their Surge profiles do **not** cross-sync through iCloud. Earlier references in this report to a shared profile propagating to the primary iPhone were an incorrect precaution. Model-conditional DEVICE_MODEL rules on the spare are legacy safeguards and are not necessary to protect the primary device. This research modifies **only the connected spare**; the primary iPhone is not remotely accessible through this Surge controller.
+
 **Date:** 2026-11-23. **Status:** Research only, no changes to live Surge, iCloud profile, AdGuard Home, Apple devices, production rules, or subscription URLs.
 
 ## Context and rule order
