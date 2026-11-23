@@ -1,0 +1,31 @@
+name: Compare Advertising Lite candidates (read-only)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/research_advertising_lite.py"
+      - "tests/test_advertising_lite_research.py"
+      - ".github/workflows/research-advertising-lite.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Test conservative source parsing offline
+        run: python3 -m unittest discover -s tests -p test_advertising_lite_research.py -v
+      - name: Compare public sources without any deployment
+        run: python3 scripts/research_advertising_lite.py
+      - name: Upload statistics only (not original blocklists)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: advertising-lite-source-comparison
+          path: /tmp/advertising-lite-comparison.json
+          retention-days: 14
