@@ -1,0 +1,38 @@
+{
+  "version": "2026.11.24-rc1",
+  "status": "release-candidate; no device deployment",
+  "sets": [
+    {
+      "file": "rules/Advertising-Lite.list",
+      "count": 2890,
+      "git_blob": "3a8d2d3e9f6c68955192736e027a1079362d9f03",
+      "tested_commit": "41cc017763ae9ef2127eac28be1effd11ef1080e",
+      "tested_path": "experiments/advertising-lite/Advertising-Lite-TEST.list",
+      "tested_blob": "ea6d2316d16180147930a363f928976a598d9431"
+    },
+    {
+      "file": "rules/Privacy-Curated.list",
+      "count": 39935,
+      "git_blob": "87438e582b8f4f4303ea9124280a3bfae1c4aad8",
+      "tested_commit": "ed558890190af404456b7ca5d68ac119cd087566",
+      "tested_path": "experiments/privacy-curated/Privacy-Curated-TEST.list",
+      "tested_blob": "71485074a103d11998a75432ad7566833a97657f"
+    },
+    {
+      "file": "rules/Hijacking-Curated.list",
+      "count": 227,
+      "git_blob": "e8430c608bf85537d86cd0e19b907d73c77ef71d",
+      "tested_commit": "09a8434d829afdfce3583955d4173768a5b062ec",
+      "tested_path": "experiments/hijacking-curated/Hijacking-Curated-TEST.list",
+      "tested_blob": "f1b234f38aaf6b4e0ff9eb97c941336444598da1"
+    }
+  ],
+  "unchanged": {
+    "adguard_allowlist_git_blob": "6a917c0e60f492af749410c6b0c12884444bdabd",
+    "china_all": "original upstream",
+    "full_advertising": "existing rules/Advertising.list",
+    "tencent_safe_browsing": "block",
+    "microsoft": "direct"
+  },
+  "deployment": "Manual fixed-SHA after review. Separate main, family, and test device configurations."
+}
