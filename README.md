@@ -1,6 +1,6 @@
 # Surge Rules
 
-个人维护的 Surge 规则仓库：**上游审计 → 独立规则集 → 自动校验 → 草稿 PR → 人工审核 → 固定版本发布**。
+个人维护的 Surge 规则仓库：**上游审计 → 独立规则集 → 自动校验 → 草稿 PR → 人工审核 → 稳定分支发布**。
 
 这是公开仓库。请勿提交 Surge 完整配置、节点、账号、密钥、WireGuard/HTTP API 凭据或私人域名服务信息。
 
@@ -9,7 +9,7 @@
 - **iPhone 15 Pro 是唯一实验机**。其他 iPhone、iPhone Air 和 Mac 不自动切换新规则。
 - GitHub Actions 只能提出草稿 PR，**没有自动合并、设备写入或部署步骤**。
 - 规则集文件内只有匹配条件，Surge 中引用它的 `RULE-SET,<url>,<policy>` 才指定策略。
-- 生产或稳定设备采用审核后的固定 Commit SHA 或稳定发布标签，不直接随 `main` 前移。
+- 正式订阅使用 `stable` 分支；仅在候选版本审核、校验及验收完成后手工推进 `stable`。`main` 不直接用于正式订阅。固定 SHA 用于候选测试与回滚。
 
 ## 已发布的规则
 
@@ -27,10 +27,10 @@
 | 规则文件 | 数量 | 与已测试版的匹配条件差异 |
 | --- | ---: | ---: |
 | [Advertising-Lite.list](rules/Advertising-Lite.list) | 2,890 | 0 |
-| [Privacy-Curated.list](rules/Privacy-Curated.list) | 39,935 | 0 |
-| [Hijacking-Curated.list](rules/Hijacking-Curated.list) | 227 | 0 |
+| [Privacy.list](rules/Privacy.list) | 39,935 | 0 |
+| [Hijacking.list](rules/Hijacking.list) | 227 | 0 |
 
-完整版 Advertising 保留。腾讯 Safe Browsing 继续拦截，Microsoft 继续现有直连策略；AdGuard Home 与 China_All 不变。发布审核完成后使用固定 SHA，先验收备用机，再由维护者手动共享正式配置。
+完整版 Advertising 保留。腾讯 Safe Browsing 继续拦截，Microsoft 继续现有直连策略；AdGuard Home 与 China_All 不变。候选版本验收后手工推进 `stable`；旧 `*-Curated.list` 文件名暂留为兼容路径，不应重复订阅。
 
 详见 [发布与回滚](docs/CURATED-RULES-RELEASE.md)、[来源与许可证](docs/CURATED-RULES-NOTICES.md)、[固定版本清单](config/curated-rules-release.json)。
 
@@ -63,7 +63,7 @@ Garmin 独立候选规则见 [Garmin 实测与验收说明](docs/GARMIN.md)，�
 1. 查清实际分流/误拦截日志，再决定是否改变规则。
 2. 检查许可证、原始快照 SHA-256、变更数量和规则类型。
 3. 在候选 PR 上通过离线构建与 GitHub Actions 校验，不接受未经审核的新规则自动入库。
-4. 手工合并后使用固定 SHA URL，在 iPhone 15 Pro 上逐条替换对应原始订阅；**不得额外叠加重复规则**。
+4. 先用固定 SHA 验收候选规则，再手工推进 `stable` 分支；**不得额外叠加重复规则**。
 5. 记录旧 URL 和旧策略；异常则实验机逐条回滚，其他设备继续保持原样。
 
 相关手册：[规则审计与回滚](docs/OPERATIONS.md)、[微信统一规则](docs/UNIFIED-RULESETS.md)、[广告白名单](docs/ADVERTISING-EXCLUSIONS.md)。

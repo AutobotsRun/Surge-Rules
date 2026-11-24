@@ -11,7 +11,7 @@
       "tested_blob": "ea6d2316d16180147930a363f928976a598d9431"
     },
     {
-      "file": "rules/Privacy-Curated.list",
+      "file": "rules/Privacy.list",
       "count": 39935,
       "git_blob": "87438e582b8f4f4303ea9124280a3bfae1c4aad8",
       "tested_commit": "ed558890190af404456b7ca5d68ac119cd087566",
@@ -19,7 +19,7 @@
       "tested_blob": "71485074a103d11998a75432ad7566833a97657f"
     },
     {
-      "file": "rules/Hijacking-Curated.list",
+      "file": "rules/Hijacking.list",
       "count": 227,
       "git_blob": "e8430c608bf85537d86cd0e19b907d73c77ef71d",
       "tested_commit": "09a8434d829afdfce3583955d4173768a5b062ec",
@@ -34,5 +34,5 @@
     "tencent_safe_browsing": "block",
     "microsoft": "direct"
   },
-  "deployment": "Manual fixed-SHA after review. Separate main, family, and test device configurations."
+  "deployment": "Fixed-SHA candidate validation; manually advance stable after review. Legacy Curated filenames remain compatibility aliases."
 }
