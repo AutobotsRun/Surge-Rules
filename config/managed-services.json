@@ -108,6 +108,13 @@
       "mirror_path": "upstream/blackmatrix7/Sina.list",
       "published_path": "rules/Sina.list",
       "baseline_rules": 108
+    },
+    {
+      "id": "blackmatrix7-china_all",
+      "name": "China_All",
+      "mirror_path": "upstream/blackmatrix7/China_All.list",
+      "published_path": "rules/China_All.list",
+      "baseline_rules": 3752
     }
   ]
 }

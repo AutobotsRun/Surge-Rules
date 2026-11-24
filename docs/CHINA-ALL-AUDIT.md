@@ -1,0 +1,15 @@
+# China_All audit and staged migration (2026-11-24)
+
+## Stage A: zero-predicate-change mirror
+
+Upstream: https://github.com/blackmatrix7/ios_rule_script/blob/0b6897dc17e0c513d25449c935a9694818e32f0c/rule/Surge/China/China_All.list (GPL-2.0, retained license). Source blob bba28360d9dc0310b418df6d9fb7dfa76588c895. Existing audited fingerprint aee93e6383987a8afd6c9d0932203bb9c5ccf25f135b9dfeca676937780f8785, 100523 bytes, 3752 active rows, no duplicates. CI must validate exact bytes against the fingerprint. Preserve all rows and order: DOMAIN 17, DOMAIN-SUFFIX 3674, DOMAIN-KEYWORD 9, IP-CIDR 17, IP-CIDR6 4, USER-AGENT 31. Do not remove cn, ms, garmin.com, windows.net or Microsoft predicates. The output only adds the deterministic provenance header. Daily monitoring promotes to reviewed mirror and generated candidate; never auto merge or deploy.
+
+## Domain-level overlap audit
+
+Compared exact and suffix predicates of pinned non-Direct service files with China_All exact, suffix and keyword rules; counted each service predicate once if equal, covered, or containing a narrower China domain. Counts: Sina 61, Amazon 32, PayPal 12, Google 8, OpenAI 1, YouTube 1 (115 total). Other compared services Disney, HBO, MetaAI, Netflix, ParamountPlus, Peacock, Reddit, Spotify and Telegram had zero detected exact/suffix overlaps. This is a static partial analysis, not full equivalence or a count of actual incorrect requests; service keywords, IPs, DNS resolution, User-Agent and other predicates may introduce additional overlaps. Many China overlaps are intentional or need review.
+
+Spare-device TCP rule checks confirmed connect.garmin.com (garmin.com), m.sina.cn and www.sina.com.cn (cn), weibo.com (weibo.com), and openaicomproductionae4b.blob.core.windows.net (windows.net) are selected by China_All Direct ahead of the intended service rules. Microsoft, Amazon China, Google China and PayPal China also currently match Direct; preserve them unless explicitly reviewed.
+
+## Stage B: separate intentional profile priority changes
+
+After the mirror is indexed and representative old decisions match the new one, consider moving only the existing Sina REJECT ruleset and existing exact-scope Garmin rule before China_All, retaining the existing ad/privacy/hijack rules and four Direct exceptions above both. The user intentionally blocks Sina; full Sina includes Weibo and broad weibo keyword, so explicitly note that moving the whole set activates that scope. Add an exact OpenAI Azure Blob hostname exception using the existing OpenAI US policy only if reviewed; do not move the full OpenAI or every foreign service above China_All. Keep Microsoft and other domestic behavior unchanged. Check rule decisions with explain mode, including home services, Chinese sites, payment/WeChat exceptions, Google Safe Browsing and core services. App functional tests are separate. Keep the two changes separate, record revisions, rollback affected profile section on failure. No complete profile or private information stored in repo. No devices changed by this PR.
