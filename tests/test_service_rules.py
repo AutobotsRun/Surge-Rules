@@ -36,10 +36,12 @@ class ManagedServicesTests(unittest.TestCase):
             mirror = f"upstream/blackmatrix7/{name}.list"
             published = f"rules/{name}.list"
             data = b"DOMAIN,example.org\nOR,((IP-ASN,44907,no-resolve),(IP-ASN,59930,no-resolve))\n"
+            if name == "China_All":
+                data = b"DOMAIN,example.org\nDOMAIN-SUFFIX,windows.net\nOR,((IP-ASN,44907,no-resolve),(IP-ASN,59930,no-resolve))\n"
             (self.root / mirror).write_bytes(data)
             self.manifest["services"].append({
                 "id": sid, "name": name, "mirror_path": mirror,
-                "published_path": published, "baseline_rules": 2
+                "published_path": published, "baseline_rules": len(data.splitlines())
             })
             self.catalog["sources"].append({
                 "id": sid, "url": f"https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/{name}/{name}.list",
@@ -49,7 +51,7 @@ class ManagedServicesTests(unittest.TestCase):
             })
             self.state["sources"].append({
                 "id": sid, "sha256": hashlib.sha256(data).hexdigest(),
-                "bytes": len(data), "lines": 2, "mode": "mirror",
+                "bytes": len(data), "lines": len(data.splitlines()), "mode": "mirror",
                 "mirror_path": mirror
             })
         self.save()
@@ -93,12 +95,19 @@ class ManagedServicesTests(unittest.TestCase):
                 self.assertEqual(len(mod.source_rules(raw, name)), count)
                 self.assertTrue(outputs[f"rules/{name}.list"].endswith(raw))
 
-    def test_china_mirror_preserves_all_predicates_and_order(self):
+    def test_china_mirror_omits_only_reviewed_windows_net_predicate(self):
         raw = (mod.ROOT / "upstream/blackmatrix7/China_All.list").read_bytes()
         state = {r["id"]: r for r in mod.load_json(mod.ROOT / mod.STATE)["sources"]}
         output = mod.build_outputs(mod.ROOT)["rules/China_All.list"]
-        self.assertEqual(len(mod.source_rules(raw, "China_All")), state["blackmatrix7-china_all"]["lines"])
-        self.assertTrue(output.endswith(raw))
+        source_rows = mod.source_rules(raw, "China_All")
+        generated_rows = mod.source_rules(output, "China_All generated")
+        self.assertEqual(len(source_rows), state["blackmatrix7-china_all"]["lines"])
+        self.assertIn("DOMAIN-SUFFIX,windows.net", source_rows)
+        self.assertEqual(generated_rows, [r for r in source_rows if r != "DOMAIN-SUFFIX,windows.net"])
+        self.assertEqual(len(generated_rows), 3751)
+        self.assertNotIn("DOMAIN-SUFFIX,windows.net", generated_rows)
+        self.assertIn("DOMAIN-SUFFIX,windows.com", generated_rows)
+        self.assertIn("DOMAIN-SUFFIX,windowsupdate.com", generated_rows)
 
     def test_rejects_tampered_snapshot(self):
         path = self.root / "upstream/blackmatrix7/Google.list"
