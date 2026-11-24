@@ -46,6 +46,8 @@ Meta AI 独立规则另见 [Meta AI 维护说明](docs/META-AI.md)。China_All �
 
 Garmin 独立候选规则见 [Garmin 实测与验收说明](docs/GARMIN.md)，不复制第三方规则集。
 
+Apple 推送例外独立维护于 [Apple-Push.list](rules/Apple-Push.list)，应保留在 Apple.list 之前，详见 [Apple 推送维护说明](docs/APPLE-PUSH.md)。
+
 精确直连例外统一维护于 [Direct-Exceptions.list](rules/Direct-Exceptions.list)，需在拦截规则之前调用，详见 [直连例外维护说明](docs/DIRECT-EXCEPTIONS.md)。
 
 ## 上游监测与同步
