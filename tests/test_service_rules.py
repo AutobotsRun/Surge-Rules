@@ -93,12 +93,19 @@ class ManagedServicesTests(unittest.TestCase):
                 self.assertEqual(len(mod.source_rules(raw, name)), count)
                 self.assertTrue(outputs[f"rules/{name}.list"].endswith(raw))
 
-    def test_china_mirror_preserves_all_predicates_and_order(self):
+    def test_china_mirror_omits_only_reviewed_windows_net_predicate(self):
         raw = (mod.ROOT / "upstream/blackmatrix7/China_All.list").read_bytes()
         state = {r["id"]: r for r in mod.load_json(mod.ROOT / mod.STATE)["sources"]}
         output = mod.build_outputs(mod.ROOT)["rules/China_All.list"]
-        self.assertEqual(len(mod.source_rules(raw, "China_All")), state["blackmatrix7-china_all"]["lines"])
-        self.assertTrue(output.endswith(raw))
+        source_rows = mod.source_rules(raw, "China_All")
+        generated_rows = mod.source_rules(output, "China_All generated")
+        self.assertEqual(len(source_rows), state["blackmatrix7-china_all"]["lines"])
+        self.assertIn("DOMAIN-SUFFIX,windows.net", source_rows)
+        self.assertEqual(generated_rows, [r for r in source_rows if r != "DOMAIN-SUFFIX,windows.net"])
+        self.assertEqual(len(generated_rows), 3751)
+        self.assertNotIn("DOMAIN-SUFFIX,windows.net", generated_rows)
+        self.assertIn("DOMAIN-SUFFIX,windows.com", generated_rows)
+        self.assertIn("DOMAIN-SUFFIX,windowsupdate.com", generated_rows)
 
     def test_rejects_tampered_snapshot(self):
         path = self.root / "upstream/blackmatrix7/Google.list"

@@ -17,6 +17,10 @@ STATE = pathlib.Path("upstreams/state.json")
 LICENSE = pathlib.Path("sources/blackmatrix7/LICENSE")
 SOURCE_REPO = "https://github.com/blackmatrix7/ios_rule_script"
 KNOWN_NAMES = {"Google", "YouTube", "Apple", "OpenAI", "Telegram", "Netflix", "Spotify", "HBO", "Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina", "China_All"}
+LOCAL_EXCLUSIONS = {
+    # Preserve the upstream snapshot; omit this reviewed broad match only from output.
+    "China_All": ("DOMAIN-SUFFIX,windows.net",),
+}
 RULE_TYPES = {
     "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-WILDCARD",
     "IP-CIDR", "IP-CIDR6", "IP-ASN", "USER-AGENT", "PROCESS-NAME",
@@ -119,6 +123,10 @@ def build_outputs(root=ROOT):
         data = mirror_path.read_bytes()
         digest = hashlib.sha256(data).hexdigest()
         active = source_rules(data, sid)
+        exclusions = LOCAL_EXCLUSIONS.get(name, ())
+        for predicate in exclusions:
+            if active.count(predicate) != 1:
+                raise ValueError(f"Expected exactly one reviewed exclusion {predicate!r} in {name}")
         if (digest != record["sha256"] or len(data) != record["bytes"]
                 or len(active) != record["lines"]):
             raise ValueError("Snapshot differs from audited fingerprint: " + sid)
@@ -131,11 +139,20 @@ def build_outputs(root=ROOT):
             "# Derived from blackmatrix7/ios_rule_script (GPL-2.0).\n"
             f"# Original: {src['url']}\n"
             "# License text: sources/blackmatrix7/LICENSE\n"
-            f"# Local change {provenance_date}: added this provenance header; rule predicates unchanged.\n"
+            (f"# Local change {provenance_date}: removed reviewed predicate(s) {', '.join(exclusions)} from generated output; upstream snapshot retained unchanged.\n"
+             if exclusions else f"# Local change {provenance_date}: added this provenance header; rule predicates unchanged.\n")
             "# Matching policy is assigned by the calling Surge RULE-SET.\n"
             "\n"
         )
-        outputs[published] = header.encode("utf-8") + data
+        if exclusions:
+            excluded = set(exclusions)
+            generated_data = b"".join(
+                line for line in data.splitlines(keepends=True)
+                if line.decode("utf-8").strip() not in excluded
+            )
+        else:
+            generated_data = data
+        outputs[published] = header.encode("utf-8") + generated_data
     if names != KNOWN_NAMES:
         raise ValueError("Managed-services catalog is incomplete")
     return outputs

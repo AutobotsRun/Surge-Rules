@@ -42,7 +42,7 @@
 
 具体来源、GPL-2.0 许可、规则数量、自动构建和风险提示见 [十六套服务规则维护手册](docs/MANAGED-SERVICES.md)。
 
-Meta AI 独立规则另见 [Meta AI 维护说明](docs/META-AI.md)。China_All 的优先级冲突及候选调整见 [China_All 审计](docs/CHINA-ALL-AUDIT.md)。
+Meta AI 独立规则另见 [Meta AI 维护说明](docs/META-AI.md)。China_All 的本地精简规则及优先级审计见 [China_All 审计](docs/CHINA-ALL-AUDIT.md)。
 
 Garmin 独立候选规则见 [Garmin 实测与验收说明](docs/GARMIN.md)，不复制第三方规则集。
 
