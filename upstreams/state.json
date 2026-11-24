@@ -38,8 +38,8 @@
       "sha256": "f282c666dd8f4183c3451082a4d20a5da65dede1321c893a7862add1832ea5e7",
       "bytes": 6545,
       "lines": 206,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/Amazon.list"
     },
     {
       "id": "blackmatrix7-apple_all",
@@ -54,8 +54,8 @@
       "sha256": "d0cfd6aee89d9d3075aef9dfadd98a2a3c6a2dba487f5091c801d1bcd70e9884",
       "bytes": 5674,
       "lines": 175,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/Disney.list"
     },
     {
       "id": "blackmatrix7-google",
@@ -102,40 +102,40 @@
       "sha256": "cac7d967e7bcb6ccb080451e43b6de264706f749ee1195446ef07d3ccd38e2a3",
       "bytes": 486,
       "lines": 10,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/ParamountPlus.list"
     },
     {
       "id": "blackmatrix7-paypal",
       "sha256": "4ffb6f94d2f1eff835c24b533c3d1d6e0c5a4cfbc32740fa9c32315ae218fd18",
       "bytes": 7859,
       "lines": 248,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/PayPal.list"
     },
     {
       "id": "blackmatrix7-peacock",
       "sha256": "9a76bed21587550edaa62b4b745c996fb4b901aa9bd12c4b9de01c6a3c16f61b",
       "bytes": 226,
       "lines": 2,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/Peacock.list"
     },
     {
       "id": "blackmatrix7-reddit",
       "sha256": "8437bd0bbf3214170f6601f3a9b34d45a7684c9e9f8d7554b608142be8a2e80b",
       "bytes": 426,
       "lines": 8,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/Reddit.list"
     },
     {
       "id": "blackmatrix7-sina",
       "sha256": "223182b8b06af7838174f94839e1e799b39a9e283b66b0e1a71108539d7c2829",
       "bytes": 2994,
       "lines": 108,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/Sina.list"
     },
     {
       "id": "blackmatrix7-spotify",

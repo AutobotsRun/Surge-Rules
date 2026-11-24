@@ -1,4 +1,4 @@
-"""Offline regression tests for eight curated GPL-2.0 service rule-sets."""
+"""Offline regression tests for fifteen curated GPL-2.0 service rule-sets."""
 import hashlib
 import json
 import tempfile
@@ -11,6 +11,8 @@ NAMES = [
     ("google", "Google"), ("youtube", "YouTube"), ("apple_all", "Apple"),
     ("openai", "OpenAI"), ("telegram", "Telegram"),
     ("netflix", "Netflix"), ("spotify", "Spotify"), ("hbo", "HBO"),
+    ("amazon", "Amazon"), ("disney", "Disney"), ("paramountplus", "ParamountPlus"),
+    ("peacock", "Peacock"), ("reddit", "Reddit"), ("paypal", "PayPal"), ("sina", "Sina"),
 ]
 
 
@@ -65,7 +67,7 @@ class ManagedServicesTests(unittest.TestCase):
 
     def test_generation_preserves_all_predicates_and_complex_or(self):
         result = mod.build_outputs(self.root)
-        self.assertEqual(len(result), 8)
+        self.assertEqual(len(result), 15)
         self.assertIn("rules/HBO.list", result)
         raw = (self.root / "upstream/blackmatrix7/Telegram.list").read_bytes()
         output = result["rules/Telegram.list"]
@@ -79,6 +81,15 @@ class ManagedServicesTests(unittest.TestCase):
         self.assertEqual(len(mod.source_rules(original, "HBO")), 50)
         self.assertTrue(output.endswith(original))
         self.assertIn(b"DOMAIN-SUFFIX,max.com", output)
+
+    def test_new_seven_real_rules_preserved_verbatim(self):
+        expected = {"Amazon":206,"Disney":175,"ParamountPlus":10,"Peacock":2,"Reddit":8,"PayPal":248,"Sina":108}
+        outputs = mod.build_outputs(mod.ROOT)
+        for name, count in expected.items():
+            with self.subTest(name=name):
+                raw = (mod.ROOT / f"upstream/blackmatrix7/{name}.list").read_bytes()
+                self.assertEqual(len(mod.source_rules(raw, name)), count)
+                self.assertTrue(outputs[f"rules/{name}.list"].endswith(raw))
 
     def test_rejects_tampered_snapshot(self):
         path = self.root / "upstream/blackmatrix7/Google.list"

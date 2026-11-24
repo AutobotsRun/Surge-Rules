@@ -34,13 +34,13 @@
 
 详见 [发布与回滚](docs/CURATED-RULES-RELEASE.md)、[来源与许可证](docs/CURATED-RULES-NOTICES.md)、[固定版本清单](config/curated-rules-release.json)。
 
-## 已审核的八套服务规则
+## 已审核的十五套服务规则
 
-`Google`、`YouTube`、`Apple`、`OpenAI`、`Telegram`、`Netflix`、`Spotify`、`HBO` 分别发布为 `rules/<Service>.list`。这些文件保留上游全部匹配谓词及原有顺序，只加来源与修改说明；对应原始快照位于 `upstream/blackmatrix7/`。
+`Google`、`YouTube`、`Apple`、`OpenAI`、`Telegram`、`Netflix`、`Spotify`、`HBO`、`Amazon`、`Disney`、`ParamountPlus`、`Peacock`、`Reddit`、`PayPal`、`Sina` 分别发布为 `rules/<Service>.list`。这些文件保留上游全部匹配谓词及原有顺序，只加来源与修改说明；对应原始快照位于 `upstream/blackmatrix7/`。
 
-前七套已在 iPhone 15 Pro 逐条切换到审核后固定版本；HBO 仍需先通过 PR 校验与合并，随后在这台实验机上单独验证。其他设备不动。
+原八套已在 iPhone 15 Pro 逐条切换到审核后固定版本；新增七套须先通过 PR 校验与人工审核，再逐条验证实验机。其他设备不动。
 
-具体来源、GPL-2.0 许可、规则数量、自动构建和风险提示见 [八套服务规则维护手册](docs/MANAGED-SERVICES.md)。
+具体来源、GPL-2.0 许可、规则数量、自动构建和风险提示见 [十五套服务规则维护手册](docs/MANAGED-SERVICES.md)。
 
 ## 上游监测与同步
 

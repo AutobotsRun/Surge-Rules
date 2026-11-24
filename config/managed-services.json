@@ -59,6 +59,55 @@
       "mirror_path": "upstream/blackmatrix7/Spotify.list",
       "published_path": "rules/Spotify.list",
       "baseline_rules": 31
+    },
+    {
+      "id": "blackmatrix7-amazon",
+      "name": "Amazon",
+      "mirror_path": "upstream/blackmatrix7/Amazon.list",
+      "published_path": "rules/Amazon.list",
+      "baseline_rules": 206
+    },
+    {
+      "id": "blackmatrix7-disney",
+      "name": "Disney",
+      "mirror_path": "upstream/blackmatrix7/Disney.list",
+      "published_path": "rules/Disney.list",
+      "baseline_rules": 175
+    },
+    {
+      "id": "blackmatrix7-paramountplus",
+      "name": "ParamountPlus",
+      "mirror_path": "upstream/blackmatrix7/ParamountPlus.list",
+      "published_path": "rules/ParamountPlus.list",
+      "baseline_rules": 10
+    },
+    {
+      "id": "blackmatrix7-peacock",
+      "name": "Peacock",
+      "mirror_path": "upstream/blackmatrix7/Peacock.list",
+      "published_path": "rules/Peacock.list",
+      "baseline_rules": 2
+    },
+    {
+      "id": "blackmatrix7-reddit",
+      "name": "Reddit",
+      "mirror_path": "upstream/blackmatrix7/Reddit.list",
+      "published_path": "rules/Reddit.list",
+      "baseline_rules": 8
+    },
+    {
+      "id": "blackmatrix7-paypal",
+      "name": "PayPal",
+      "mirror_path": "upstream/blackmatrix7/PayPal.list",
+      "published_path": "rules/PayPal.list",
+      "baseline_rules": 248
+    },
+    {
+      "id": "blackmatrix7-sina",
+      "name": "Sina",
+      "mirror_path": "upstream/blackmatrix7/Sina.list",
+      "published_path": "rules/Sina.list",
+      "baseline_rules": 108
     }
   ]
 }
