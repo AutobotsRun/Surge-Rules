@@ -1,0 +1,9 @@
+# Reviewed exact Direct exceptions, independently maintained.
+# Caller must assign Direct and place before Advertising, Privacy and Hijacking.
+# Initial 2026-11-24: moved four existing profile predicates without changes.
+# Add only narrowly scoped, evidence-reviewed hostnames; see docs/DIRECT-EXCEPTIONS.md.
+
+DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net
+DOMAIN,apd-pcdnwxstat.teg.tencent-cloud.net
+DOMAIN,dns.weixin.qq.com.cn
+DOMAIN,smartpay-admin.fugetech.com
