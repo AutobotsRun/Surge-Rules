@@ -134,13 +134,17 @@ def build_outputs(root=ROOT):
         if type(floor) is not int or floor < 1 or len(active) * 2 < floor:
             raise ValueError("Unexpected >50% rules decrease: " + sid)
         provenance_date = "2026-11-24" if name in {"Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina", "China_All"} else "2026-11-23"
+        local_change_note = (
+            f"# Local change {provenance_date}: removed reviewed predicate(s) {', '.join(exclusions)} from generated output; upstream snapshot retained unchanged.\n"
+            if exclusions else
+            f"# Local change {provenance_date}: added this provenance header; rule predicates unchanged.\n"
+        )
         header = (
             "# GENERATED managed rule-set; do not edit directly.\n"
             "# Derived from blackmatrix7/ios_rule_script (GPL-2.0).\n"
             f"# Original: {src['url']}\n"
             "# License text: sources/blackmatrix7/LICENSE\n"
-            (f"# Local change {provenance_date}: removed reviewed predicate(s) {', '.join(exclusions)} from generated output; upstream snapshot retained unchanged.\n"
-             if exclusions else f"# Local change {provenance_date}: added this provenance header; rule predicates unchanged.\n")
+            f"{local_change_note}"
             "# Matching policy is assigned by the calling Surge RULE-SET.\n"
             "\n"
         )
