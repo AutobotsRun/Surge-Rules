@@ -1,0 +1,12 @@
+# Garmin focused candidate: Connect, authentication and Connect IQ.
+# Independently maintained from spare-device observed destination hostnames, 2026-11-24.
+# Retain existing connect.garmin.com suffix scope; new hosts match exactly.
+# Caller assigns policy. Place before broad China_All, after privacy/block rules.
+# No third-party ruleset copied; keep sports, shared services and download domains unchanged.
+
+DOMAIN-SUFFIX,connect.garmin.com
+DOMAIN,connectapi.garmin.com
+DOMAIN,diauth.garmin.com
+DOMAIN,account.customer.services.garmin.com
+DOMAIN,mobile-auth.security.services.garmin.com
+DOMAIN,apps.garmin.com
