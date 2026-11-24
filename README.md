@@ -20,6 +20,20 @@
 | [custom/WeChat-CDN.list](custom/WeChat-CDN.list) | 四条精确 CDN IP 例外 | 自定义源文件 |
 | [custom/WeChat-PCDN.list](custom/WeChat-PCDN.list) | 微信 PCDN 域名例外 | 自定义源文件 |
 
+## 精修规则发布候选（2026.11.24-rc1）
+
+备用机实测规则的固定快照，**当前仍需审核，不自动部署**。
+
+| 规则文件 | 数量 | 与已测试版的匹配条件差异 |
+| --- | ---: | ---: |
+| [Advertising-Lite.list](rules/Advertising-Lite.list) | 2,890 | 0 |
+| [Privacy-Curated.list](rules/Privacy-Curated.list) | 39,935 | 0 |
+| [Hijacking-Curated.list](rules/Hijacking-Curated.list) | 227 | 0 |
+
+完整版 Advertising 保留。腾讯 Safe Browsing 继续拦截，Microsoft 继续现有直连策略；AdGuard Home 与 China_All 不变。发布审核完成后使用固定 SHA，先验收备用机，再由维护者手动共享正式配置。
+
+详见 [发布与回滚](docs/CURATED-RULES-RELEASE.md)、[来源与许可证](docs/CURATED-RULES-NOTICES.md)、[固定版本清单](config/curated-rules-release.json)。
+
 ## 已审核的八套服务规则
 
 `Google`、`YouTube`、`Apple`、`OpenAI`、`Telegram`、`Netflix`、`Spotify`、`HBO` 分别发布为 `rules/<Service>.list`。这些文件保留上游全部匹配谓词及原有顺序，只加来源与修改说明；对应原始快照位于 `upstream/blackmatrix7/`。
