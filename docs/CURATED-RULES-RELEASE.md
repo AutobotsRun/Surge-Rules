@@ -7,8 +7,8 @@
 | File | Active predicates | Effective changes vs live spare |
 | --- | ---: | --- |
 | rules/Advertising-Lite.list | 2,890 | 0 |
-| rules/Privacy-Curated.list | 39,935 | 0 |
-| rules/Hijacking-Curated.list | 227 | 0 |
+| rules/Privacy.list | 39,935 | 0 |
+| rules/Hijacking.list | 227 | 0 |
 
 All predicate sequences were compared with immutable tested artifacts and read back from GitHub. [Manifest](../config/curated-rules-release.json) records the source and candidate Git blob hashes. [License and modifications](CURATED-RULES-NOTICES.md) are preserved.
 
@@ -16,7 +16,7 @@ The previous full Advertising.list is untouched. China_All stays original; Micro
 
 ## After review and merge
 
-1. Pin the approved release commit SHA (never subscribe directly to a moving main or release branch). Use the three rules/ paths listed above.
+1. Validate candidate rules using a fixed commit SHA, then manually advance stable after approval. Use stable/rules/ for ongoing subscriptions, not main. The old Privacy-Curated.list and Hijacking-Curated.list paths are retained as compatibility aliases and must not be subscribed alongside their replacements.
 2. Switch one rule-set at a time on the spare, retaining the current immutable experimental subscription as a fallback until the new file indexes and real match tests pass. For large Privacy, open the main Surge app if the resource reports No index. Remove the fallback after verification; never leave duplicate lists running.
 3. Validate normal ad and tracker rejects, the two retained Hijacking IP examples, Google US, Tencent REJECT, the four existing direct exceptions and Microsoft Direct. A rule-match check alone is not an app compatibility test.
 4. After successful spare-device review, the owner may manually update the master profile and share it with family. No automatic deployment or iCloud transfer to those devices.
@@ -34,13 +34,13 @@ DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net,"🚀 Direct"
 DOMAIN,apd-pcdnwxstat.teg.tencent-cloud.net,"🚀 Direct"
 DOMAIN,dns.weixin.qq.com.cn,"🚀 Direct"
 DOMAIN,smartpay-admin.fugetech.com,"🚀 Direct"
-RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/APPROVED_COMMIT/rules/Advertising-Lite.list,REJECT
+RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/stable/rules/Advertising-Lite.list,REJECT
 
 # Privacy
-RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/APPROVED_COMMIT/rules/Privacy-Curated.list,REJECT
+RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/stable/rules/Privacy.list,REJECT
 
 # Hijacking
-RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/APPROVED_COMMIT/rules/Hijacking-Curated.list,REJECT
+RULE-SET,https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/stable/rules/Hijacking.list,REJECT
 ```
 
-Keep China_All, Google and all other existing sections in their original order. This template is not deployable until APPROVED_COMMIT is replaced with the reviewed immutable SHA.
+Keep China_All, Google and all other existing sections in their original order. The stable branch must point to a reviewed release before using this template.

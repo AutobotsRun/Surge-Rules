@@ -36,7 +36,7 @@
 ## 版本固定与回滚
 
 - 测试前先备份 Surge 现有配置，并确认外部规则的引用位置与策略组。
-- **稳定设备只使用固定 commit SHA 或发布 tag 的规则 URL**，避免 `main` 自动前移导致规则在设备端静默变化。
+- **正式订阅使用 `stable` 分支**；候选版本使用固定 SHA 验收，确认后才手工推进 `stable` 并记录新旧提交。`main` 不直接用于正式订阅。旧 `Privacy-Curated.list` / `Hijacking-Curated.list` 暂留为兼容路径，不应重复订阅。
 - 例如：`https://raw.githubusercontent.com/AutobotsRun/Surge-Rules/<FULL_COMMIT_SHA>/custom/WeChat-CDN.list`；仅示例，未授权设备变更之前不要填进 Surge。
 - 如果规则异常：先在实验机恢复原订阅 URL 或此前固定 SHA，并验证规则命中及推送，再恢复其他设备。
 - 如果仓库变更错误：在 GitHub 上通过新 PR `git revert <bad_commit_sha>` 回滚并审查。**不要 force push main，不删除历史。**

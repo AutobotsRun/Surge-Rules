@@ -33,8 +33,8 @@ class CuratedReleaseTests(unittest.TestCase):
     def test_reviewed_counts_and_syntax(self):
         self.assertEqual({k:len(v) for k,v in self.sets.items()}, {
             "rules/Advertising-Lite.list":2890,
-            "rules/Privacy-Curated.list":39935,
-            "rules/Hijacking-Curated.list":227,
+            "rules/Privacy.list":39935,
+            "rules/Hijacking.list":227,
         })
         for name, active in self.sets.items():
             for line in active:
@@ -45,15 +45,20 @@ class CuratedReleaseTests(unittest.TestCase):
         self.assertTrue(all(not r.startswith("IP-CIDR,")
                             for r in self.sets["rules/Advertising-Lite.list"]))
 
+    def test_legacy_filename_compatibility(self):
+        for name in ("Privacy", "Hijacking"):
+            self.assertEqual((ROOT / f"rules/{name}.list").read_bytes(),
+                             (ROOT / f"rules/{name}-Curated.list").read_bytes())
+
     def test_safe_browsing_decisions(self):
-        privacy = self.sets["rules/Privacy-Curated.list"]
+        privacy = self.sets["rules/Privacy.list"]
         self.assertNotIn("DOMAIN,safebrowsing.googleapis.com", privacy)
         self.assertIn("DOMAIN,safebrowsing.urlsec.qq.com", privacy)
         self.assertIn("DOMAIN-SUFFIX,googleapis.com",
                       rules((ROOT/"rules/Google.list").read_bytes()))
 
     def test_hijacking_retained(self):
-        hijacking = self.sets["rules/Hijacking-Curated.list"]
+        hijacking = self.sets["rules/Hijacking.list"]
         self.assertNotIn("DOMAIN,geo2.adobe.com", hijacking)
         self.assertEqual(sum(r.startswith("IP-CIDR,") for r in hijacking), 42)
         self.assertIn("IP-CIDR,114.119.160.0/21,no-resolve", hijacking)
