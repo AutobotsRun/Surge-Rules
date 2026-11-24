@@ -16,7 +16,7 @@ CATALOG = pathlib.Path("upstreams/catalog.json")
 STATE = pathlib.Path("upstreams/state.json")
 LICENSE = pathlib.Path("sources/blackmatrix7/LICENSE")
 SOURCE_REPO = "https://github.com/blackmatrix7/ios_rule_script"
-KNOWN_NAMES = {"Google", "YouTube", "Apple", "OpenAI", "Telegram", "Netflix", "Spotify", "HBO", "Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina"}
+KNOWN_NAMES = {"Google", "YouTube", "Apple", "OpenAI", "Telegram", "Netflix", "Spotify", "HBO", "Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina", "China_All"}
 RULE_TYPES = {
     "DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-WILDCARD",
     "IP-CIDR", "IP-CIDR6", "IP-ASN", "USER-AGENT", "PROCESS-NAME",
@@ -82,7 +82,7 @@ def build_outputs(root=ROOT):
     snapshots = {x["id"]: x for x in state["sources"]}
     declared = manifest.get("services")
     if not isinstance(declared, list) or len(declared) != len(KNOWN_NAMES):
-        raise ValueError("Expected exactly fifteen reviewed services")
+        raise ValueError("Expected exactly sixteen reviewed services")
     names, paths, outputs = set(), set(), {}
     for service in declared:
         name = service["name"]
@@ -125,7 +125,7 @@ def build_outputs(root=ROOT):
         floor = service.get("baseline_rules")
         if type(floor) is not int or floor < 1 or len(active) * 2 < floor:
             raise ValueError("Unexpected >50% rules decrease: " + sid)
-        provenance_date = "2026-11-24" if name in {"Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina"} else "2026-11-23"
+        provenance_date = "2026-11-24" if name in {"Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina", "China_All"} else "2026-11-23"
         header = (
             "# GENERATED managed rule-set; do not edit directly.\n"
             "# Derived from blackmatrix7/ios_rule_script (GPL-2.0).\n"

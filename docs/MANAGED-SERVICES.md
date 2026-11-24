@@ -1,12 +1,12 @@
-# 十五套服务规则镜像：审核、构建及发布说明
+# 十六套服务规则镜像：审核、构建及发布说明
 
-现有十五套规则为 Google、YouTube、Apple、OpenAI、Telegram、Netflix、Spotify、HBO、Amazon、Disney、ParamountPlus、Peacock、Reddit、PayPal、Sina。它们均取自 [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) 的 Surge 规则集。上游仓库标注 GPL-2.0；仓库中的 `sources/blackmatrix7/LICENSE` 保留了许可证全文。
+现有十六套规则为 Google、YouTube、Apple、OpenAI、Telegram、Netflix、Spotify、HBO、Amazon、Disney、ParamountPlus、Peacock、Reddit、PayPal、Sina、China_All。它们均取自 [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) 的 Surge 规则集。上游仓库标注 GPL-2.0；仓库中的 `sources/blackmatrix7/LICENSE` 保留了许可证全文。
 
 ## 安全与许可
 
 - `upstream/blackmatrix7/*.list` 保存已核实 SHA-256 的**原始上游快照**，不改变内容。
 - `rules/<Service>.list` 是供 Surge 引用的独立规则集，仅在原始内容前增加标明上游、许可证和修改日期的来源头部。保留所有原始匹配规则及原顺序；不删除复合规则、CIDR、进程或 User-Agent 规则。
-- 所有十五份镜像的 `upstreams/catalog.json` 标记为人工审查通过的 `mode=mirror`，并保留 URL 和 GPL-2.0；其他上游继续保持 `mode=monitor`，尤其不镜像版权尚未确认的 Meta 来源。
+- 所有十六份镜像的 `upstreams/catalog.json` 标记为人工审查通过的 `mode=mirror`，并保留 URL 和 GPL-2.0；其他上游继续保持 `mode=monitor`，尤其不镜像版权尚未确认的 Meta 来源。
 - 因派生自 GPL-2.0 规则，规则快照及派生版本应继续遵循 GPL-2.0 的相关条件。不得去掉原始版权及署名说明。
 - 不上传 Surge 完整配置、策略组、密钥或设备凭据；不能把这份规则集里的匹配条件理解成对应 `DIRECT` 或代理策略。
 
@@ -29,14 +29,15 @@
 | Reddit | 8 | `rules/Reddit.list` |
 | PayPal | 248 | `rules/PayPal.list` |
 | Sina | 108 | `rules/Sina.list` |
+| China_All | 3,752 | `rules/China_All.list` |
 
 规则的哈希值和大小另见 `upstreams/state.json`。每个文件的匹配策略应由 Surge 配置中的 `RULE-SET,<url>,<policy>` 指定，不允许把所有服务策略混在一起。
 
 ## 自动化工作流
 
 1. `.github/workflows/audit-upstreams.yml` 在 `main` 上进行每日日检，拉取上游并校验来源与规模。
-2. `scripts/audit_upstreams.py --sync` 更新十五份已授权镜像及状态指纹，其余上游仅监控。
-3. `scripts/build_service_rules.py --write` 从审核过的镜像生成十五份服务规则列表。
+2. `scripts/audit_upstreams.py --sync` 更新十六份已授权镜像及状态指纹，其余上游仅监控。
+3. `scripts/build_service_rules.py --write` 从审核过的镜像生成十六份服务规则列表。
 4. CI 使用 `scripts/build_service_rules.py --check` 比对生成结果与发布文件，逐字节一致才算通过；镜像 SHA-256、字节数及规则数量也必须与状态文件一致。
 5. 变更只创建草稿 PR，不自动合并或部署设备。修改服务清单、许可证、镜像路径、正则/复合规则或规则规模异常时要人工审查。
 
@@ -49,6 +50,8 @@
 - **Google / YouTube / OpenAI / Spotify**：部分域名或服务存在交集，不能未经测试自动去重或改变优先级。
 
 - **新增七套（2026-11-24）**：原始快照来自固定上游 commit `0b6897dc17e0c513d25449c935a9694818e32f0c`，SHA-256、字节数及规则数与现有监测基线逐项一致。PayPal 保持现有策略，支付功能需实测；Sina 是维护者主动屏蔽的服务，保留全部匹配条件及 REJECT 策略，不作精简。China_All 和 Meta 不在本批范围内。
+
+- **China_All（2026-11-24）**：原样镜像，不删减任何国内直连条件。优先级冲突属于调用方配置问题，单独审查与验收，详见 [China_All 审计](CHINA-ALL-AUDIT.md)。
 
 ## 设备测试与回滚
 

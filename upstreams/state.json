@@ -30,8 +30,8 @@
       "sha256": "aee93e6383987a8afd6c9d0932203bb9c5ccf25f135b9dfeca676937780f8785",
       "bytes": 100523,
       "lines": 3752,
-      "mode": "monitor",
-      "mirror_path": null
+      "mode": "mirror",
+      "mirror_path": "upstream/blackmatrix7/China_All.list"
     },
     {
       "id": "blackmatrix7-amazon",

@@ -1,4 +1,4 @@
-"""Offline regression tests for fifteen curated GPL-2.0 service rule-sets."""
+"""Offline regression tests for sixteen curated GPL-2.0 service rule-sets."""
 import hashlib
 import json
 import tempfile
@@ -12,7 +12,7 @@ NAMES = [
     ("openai", "OpenAI"), ("telegram", "Telegram"),
     ("netflix", "Netflix"), ("spotify", "Spotify"), ("hbo", "HBO"),
     ("amazon", "Amazon"), ("disney", "Disney"), ("paramountplus", "ParamountPlus"),
-    ("peacock", "Peacock"), ("reddit", "Reddit"), ("paypal", "PayPal"), ("sina", "Sina"),
+    ("peacock", "Peacock"), ("reddit", "Reddit"), ("paypal", "PayPal"), ("sina", "Sina"), ("china_all", "China_All"),
 ]
 
 
@@ -67,7 +67,7 @@ class ManagedServicesTests(unittest.TestCase):
 
     def test_generation_preserves_all_predicates_and_complex_or(self):
         result = mod.build_outputs(self.root)
-        self.assertEqual(len(result), 15)
+        self.assertEqual(len(result), 16)
         self.assertIn("rules/HBO.list", result)
         raw = (self.root / "upstream/blackmatrix7/Telegram.list").read_bytes()
         output = result["rules/Telegram.list"]
@@ -92,6 +92,13 @@ class ManagedServicesTests(unittest.TestCase):
                 raw = (mod.ROOT / f"upstream/blackmatrix7/{name}.list").read_bytes()
                 self.assertEqual(len(mod.source_rules(raw, name)), count)
                 self.assertTrue(outputs[f"rules/{name}.list"].endswith(raw))
+
+    def test_china_mirror_preserves_all_predicates_and_order(self):
+        raw = (mod.ROOT / "upstream/blackmatrix7/China_All.list").read_bytes()
+        state = {r["id"]: r for r in mod.load_json(mod.ROOT / mod.STATE)["sources"]}
+        output = mod.build_outputs(mod.ROOT)["rules/China_All.list"]
+        self.assertEqual(len(mod.source_rules(raw, "China_All")), state["blackmatrix7-china_all"]["lines"])
+        self.assertTrue(output.endswith(raw))
 
     def test_rejects_tampered_snapshot(self):
         path = self.root / "upstream/blackmatrix7/Google.list"
