@@ -83,9 +83,11 @@ class ManagedServicesTests(unittest.TestCase):
         self.assertIn(b"DOMAIN-SUFFIX,max.com", output)
 
     def test_new_seven_real_rules_preserved_verbatim(self):
-        expected = {"Amazon":206,"Disney":175,"ParamountPlus":10,"Peacock":2,"Reddit":8,"PayPal":248,"Sina":108}
+        names = {"Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina"}
+        records = {r["id"]: r for r in mod.load_json(mod.ROOT / mod.STATE)["sources"]}
         outputs = mod.build_outputs(mod.ROOT)
-        for name, count in expected.items():
+        for name in names:
+            count = records["blackmatrix7-" + name.lower()]["lines"]
             with self.subTest(name=name):
                 raw = (mod.ROOT / f"upstream/blackmatrix7/{name}.list").read_bytes()
                 self.assertEqual(len(mod.source_rules(raw, name)), count)

@@ -2,7 +2,7 @@
 # Derived from blackmatrix7/ios_rule_script (GPL-2.0).
 # Original: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Sina/Sina.list
 # License text: sources/blackmatrix7/LICENSE
-# Local change 2026-11-23: added this provenance header; rule predicates unchanged.
+# Local change 2026-11-24: added this provenance header; rule predicates unchanged.
 # Matching policy is assigned by the calling Surge RULE-SET.
 
 # NAME: Sina

@@ -125,12 +125,13 @@ def build_outputs(root=ROOT):
         floor = service.get("baseline_rules")
         if type(floor) is not int or floor < 1 or len(active) * 2 < floor:
             raise ValueError("Unexpected >50% rules decrease: " + sid)
+        provenance_date = "2026-11-24" if name in {"Amazon", "Disney", "ParamountPlus", "Peacock", "Reddit", "PayPal", "Sina"} else "2026-11-23"
         header = (
             "# GENERATED managed rule-set; do not edit directly.\n"
             "# Derived from blackmatrix7/ios_rule_script (GPL-2.0).\n"
             f"# Original: {src['url']}\n"
             "# License text: sources/blackmatrix7/LICENSE\n"
-            "# Local change 2026-11-23: added this provenance header; rule predicates unchanged.\n"
+            f"# Local change {provenance_date}: added this provenance header; rule predicates unchanged.\n"
             "# Matching policy is assigned by the calling Surge RULE-SET.\n"
             "\n"
         )
