@@ -13,7 +13,7 @@ class MetaAIRulesTests(unittest.TestCase):
         for domain in selected:
             self.assertIn(domain, source)
         rows = [x.strip() for x in (ROOT / "rules/MetaAI.list").read_text().splitlines() if x.strip() and not x.lstrip().startswith("#")]
-        expected = ["DOMAIN-SUFFIX," + d for d in selected] + ["DOMAIN,ai.meta.com", "DOMAIN,auth.meta.com"]
+        expected = ["DOMAIN-SUFFIX," + d for d in selected] + ["DOMAIN,ai.meta.com", "DOMAIN,auth.meta.com", "DOMAIN,meta.graph.meta.com", "DOMAIN,ar.graph.meta.com"]
         self.assertEqual(rows, expected)
 
 if __name__ == "__main__":

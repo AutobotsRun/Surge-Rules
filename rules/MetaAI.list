@@ -3,6 +3,7 @@
 # License: sources/v2fly/LICENSE; source snapshot: sources/v2fly/meta.txt
 # Official product entry: https://ai.meta.com/meta-ai/
 # Exact auth host is a provisional shared login dependency; verify with live app.
+# Observed app startup 2026-11-24: exact Meta Graph hosts, not shared Facebook domains.
 # Do not copy the unlicensed RuleGo fork. Policy supplied by calling profile.
 
 DOMAIN-SUFFIX,meta.ai
@@ -10,3 +11,5 @@ DOMAIN-SUFFIX,metaaiusercontent.com
 DOMAIN-SUFFIX,metaaivm.com
 DOMAIN,ai.meta.com
 DOMAIN,auth.meta.com
+DOMAIN,meta.graph.meta.com
+DOMAIN,ar.graph.meta.com
