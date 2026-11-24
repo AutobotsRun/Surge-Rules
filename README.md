@@ -44,6 +44,8 @@
 
 Meta AI 独立规则另见 [Meta AI 维护说明](docs/META-AI.md)。China_All 的优先级冲突及候选调整见 [China_All 审计](docs/CHINA-ALL-AUDIT.md)。
 
+Garmin 独立候选规则见 [Garmin 实测与验收说明](docs/GARMIN.md)，不复制第三方规则集。
+
 ## 上游监测与同步
 
 [upstreams/catalog.json](upstreams/catalog.json) 登记 21 个外部规则来源，[upstreams/state.json](upstreams/state.json) 保存审核过的 SHA-256、字节数和有效行数。
