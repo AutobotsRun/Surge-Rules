@@ -2,7 +2,7 @@
 # Derived from blackmatrix7/ios_rule_script (GPL-2.0).
 # Original: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/China/China_All.list
 # License text: sources/blackmatrix7/LICENSE
-# Local change 2026-11-24: removed reviewed DOMAIN-SUFFIX,windows.net from generated output; upstream snapshot retained unchanged.
+# Local change 2026-11-24: removed reviewed predicate(s) DOMAIN-SUFFIX,windows.net from generated output; upstream snapshot retained unchanged.
 # Matching policy is assigned by the calling Surge RULE-SET.
 
 # NAME: China
