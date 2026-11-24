@@ -1,0 +1,4 @@
+# Existing Apple push exceptions, migrated without predicate changes.
+# The calling RULE-SET supplies the policy; keep before Apple.list.
+DOMAIN-SUFFIX,push.apple.com
+DOMAIN-SUFFIX,push-apple.com.akadns.net
