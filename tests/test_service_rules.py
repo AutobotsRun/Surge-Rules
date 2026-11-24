@@ -36,10 +36,12 @@ class ManagedServicesTests(unittest.TestCase):
             mirror = f"upstream/blackmatrix7/{name}.list"
             published = f"rules/{name}.list"
             data = b"DOMAIN,example.org\nOR,((IP-ASN,44907,no-resolve),(IP-ASN,59930,no-resolve))\n"
+            if name == "China_All":
+                data = b"DOMAIN,example.org\nDOMAIN-SUFFIX,windows.net\nOR,((IP-ASN,44907,no-resolve),(IP-ASN,59930,no-resolve))\n"
             (self.root / mirror).write_bytes(data)
             self.manifest["services"].append({
                 "id": sid, "name": name, "mirror_path": mirror,
-                "published_path": published, "baseline_rules": 2
+                "published_path": published, "baseline_rules": len(data.splitlines())
             })
             self.catalog["sources"].append({
                 "id": sid, "url": f"https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/{name}/{name}.list",
@@ -49,7 +51,7 @@ class ManagedServicesTests(unittest.TestCase):
             })
             self.state["sources"].append({
                 "id": sid, "sha256": hashlib.sha256(data).hexdigest(),
-                "bytes": len(data), "lines": 2, "mode": "mirror",
+                "bytes": len(data), "lines": len(data.splitlines()), "mode": "mirror",
                 "mirror_path": mirror
             })
         self.save()
