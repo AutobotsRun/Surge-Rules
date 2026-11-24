@@ -41,10 +41,10 @@
     {
       "id": "blackmatrix7-amazon",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Amazon/Amazon.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Amazon.list"
     },
     {
@@ -59,10 +59,10 @@
     {
       "id": "blackmatrix7-disney",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Disney/Disney.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Disney.list"
     },
     {
@@ -113,46 +113,46 @@
     {
       "id": "blackmatrix7-paramountplus",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ParamountPlus/ParamountPlus.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/ParamountPlus.list"
     },
     {
       "id": "blackmatrix7-paypal",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/PayPal/PayPal.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/PayPal.list"
     },
     {
       "id": "blackmatrix7-peacock",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Peacock/Peacock.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Peacock.list"
     },
     {
       "id": "blackmatrix7-reddit",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Reddit/Reddit.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Reddit.list"
     },
     {
       "id": "blackmatrix7-sina",
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Sina/Sina.list",
-      "mode": "monitor",
+      "mode": "mirror",
       "license": "GPL-2.0",
       "license_url": "https://github.com/blackmatrix7/ios_rule_script/blob/master/LICENSE",
-      "redistribution_approved": false,
+      "redistribution_approved": true,
       "mirror_path": "upstream/blackmatrix7/Sina.list"
     },
     {
